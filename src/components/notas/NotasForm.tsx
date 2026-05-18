@@ -12,6 +12,7 @@ export function NotasForm({ notas, onAdd, onUpdate, onDelete }: NotasFormProps) 
   const [nuevo, setNuevo] = useState('');
   const [editando, setEditando] = useState<string | null>(null);
   const [editValor, setEditValor] = useState('');
+  const [confirmando, setConfirmando] = useState<string | null>(null);
 
   const handleAdd = async () => {
     if (!nuevo.trim()) return;
@@ -43,34 +44,35 @@ export function NotasForm({ notas, onAdd, onUpdate, onDelete }: NotasFormProps) 
                 onKeyDown={e => e.key === 'Enter' && handleUpdate(nota.id)}
                 autoFocus
               />
-              <button
-                onClick={() => handleUpdate(nota.id)}
-                className="min-h-[44px] px-3 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
+              <button onClick={() => handleUpdate(nota.id)} className="min-h-[44px] px-3 text-sm font-medium text-gray-700 hover:text-gray-900">
                 Guardar
               </button>
-              <button
-                onClick={() => setEditando(null)}
-                className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-600"
-              >
+              <button onClick={() => setEditando(null)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-600">
                 Cancelar
+              </button>
+            </div>
+          ) : confirmando === nota.id ? (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+              <span className="flex-1 text-sm text-red-700">¿Eliminar este acorde?</span>
+              <button
+                onClick={async () => { await onDelete(nota.id); setConfirmando(null); }}
+                className="min-h-[44px] px-3 text-sm font-medium text-red-600 hover:text-red-800"
+              >
+                Sí
+              </button>
+              <button onClick={() => setConfirmando(null)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-600">
+                No
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="flex-1 font-mono text-sm text-gray-700 bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg">
+              <span className="flex-1 font-mono text-sm text-chord-dark bg-chord-bg border border-emerald-100 px-3 py-2 rounded-lg">
                 {nota.contenido}
               </span>
-              <button
-                onClick={() => startEdit(nota)}
-                className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-700"
-              >
+              <button onClick={() => startEdit(nota)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-700">
                 Editar
               </button>
-              <button
-                onClick={() => onDelete(nota.id)}
-                className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-red-500"
-              >
+              <button onClick={() => setConfirmando(nota.id)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-red-500">
                 Eliminar
               </button>
             </div>

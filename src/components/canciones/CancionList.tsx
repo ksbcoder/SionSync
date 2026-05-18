@@ -5,6 +5,7 @@ import { useCanciones } from '../../hooks/useCanciones';
 import { CancionCard } from './CancionCard';
 import { SkeletonList } from '../ui/Skeleton';
 import { EmptyState } from '../ui/EmptyState';
+import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { Header } from '../layout/Header';
 import type { Cancion } from '../../types';
 
@@ -13,6 +14,7 @@ export function CancionList() {
   const { getCanciones, buscarCanciones, deleteCancion, loading } = useCanciones();
   const [canciones, setCanciones] = useState<Cancion[]>([]);
   const [query, setQuery] = useState('');
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     const data = query.trim() ? await buscarCanciones(query) : await getCanciones();
@@ -24,10 +26,10 @@ export function CancionList() {
     return () => clearTimeout(timer);
   }, [cargar, query]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar esta canción?')) return;
-    await deleteCancion(id);
-    setCanciones(prev => prev.filter(c => c.id !== id));
+  const handleDelete = async () => {
+    if (!confirmId) return;
+    await deleteCancion(confirmId);
+    setCanciones(prev => prev.filter(c => c.id !== confirmId));
   };
 
   return (
@@ -57,7 +59,7 @@ export function CancionList() {
         ) : (
           <div className="flex flex-col gap-3 md:grid md:grid-cols-2">
             {canciones.map(c => (
-              <CancionCard key={c.id} cancion={c} onDelete={handleDelete} />
+              <CancionCard key={c.id} cancion={c} onDelete={(id) => setConfirmId(id)} />
             ))}
           </div>
         )}
@@ -65,12 +67,20 @@ export function CancionList() {
 
       <button
         onClick={() => navigate('/cancion/nueva')}
-        className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
-        style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom) + 0.75rem)' }}
+        className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
+        style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom) + 0.75rem)' }}
         aria-label="Nueva canción"
       >
         <Plus className="w-6 h-6" />
       </button>
+
+      <ConfirmSheet
+        isOpen={!!confirmId}
+        onClose={() => setConfirmId(null)}
+        onConfirm={handleDelete}
+        title="¿Eliminar esta canción?"
+        description="Se eliminarán todas sus secciones y acordes. Esta acción no se puede deshacer."
+      />
     </div>
   );
 }
