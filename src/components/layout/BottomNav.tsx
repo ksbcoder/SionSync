@@ -6,7 +6,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-brand-100 flex md:hidden z-40"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <NavLink
-        to="/"
+        to="/canciones"
         end
         className={({ isActive }) =>
           `flex-1 flex flex-col items-center justify-center py-2 min-h-[56px] text-xs font-medium transition-colors ${isActive ? 'text-brand-500' : 'text-slate-400'}`
@@ -16,7 +16,7 @@ export function BottomNav() {
         Inicio
       </NavLink>
       <NavLink
-        to="/buscar"
+        to="/canciones/buscar"
         className={({ isActive }) =>
           `flex-1 flex flex-col items-center justify-center py-2 min-h-[56px] text-xs font-medium transition-colors ${isActive ? 'text-brand-500' : 'text-slate-400'}`
         }

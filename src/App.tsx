@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
+import { Home } from './components/Home';
 import { CancionList } from './components/canciones/CancionList';
 import { CancionForm } from './components/canciones/CancionForm';
 import { CancionDetalle } from './components/canciones/CancionDetalle';
@@ -25,12 +26,15 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={
+        <Route path="/" element={<Home />} />
+
+        {/* Canciones */}
+        <Route path="/canciones" element={
           <Layout>
             <CancionList />
           </Layout>
         } />
-        <Route path="/buscar" element={
+        <Route path="/canciones/buscar" element={
           <Layout>
             <CancionList />
           </Layout>
