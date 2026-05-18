@@ -1,0 +1,112 @@
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { useCanciones } from '../../hooks/useCanciones';
+import { TouchButton } from '../ui/TouchButton';
+import { TONALIDADES } from '../../utils/constants';
+import type { Cancion } from '../../types';
+
+interface CancionFormProps {
+  cancionExistente?: Cancion;
+}
+
+export function CancionForm({ cancionExistente }: CancionFormProps) {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { createCancion, updateCancion, loading } = useCanciones();
+
+  const [titulo, setTitulo] = useState(cancionExistente?.titulo ?? '');
+  const [autor, setAutor] = useState(cancionExistente?.autor ?? '');
+  const [tonalidad, setTonalidad] = useState(cancionExistente?.tonalidad ?? '');
+  const [tempo, setTempo] = useState<string>(cancionExistente?.tempo?.toString() ?? '');
+
+  const handleSubmit = async () => {
+    if (!titulo.trim()) return;
+    const data = {
+      titulo: titulo.trim(),
+      autor: autor.trim() || null,
+      tonalidad: tonalidad || null,
+      tempo: tempo ? parseInt(tempo) : null,
+    };
+    if (id && cancionExistente) {
+      const updated = await updateCancion(id, data);
+      if (updated) navigate(`/cancion/${id}`);
+    } else {
+      const created = await createCancion(data);
+      if (created) navigate(`/cancion/${created.id}`);
+    }
+  };
+
+  const esEdicion = !!cancionExistente;
+
+  return (
+    <div className="min-h-svh bg-gray-50 flex flex-col">
+      <header className="sticky top-0 bg-white border-b border-gray-200 flex items-center gap-3 px-4 py-3 z-10">
+        <button
+          onClick={() => navigate(-1)}
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-xl"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="text-lg font-semibold text-gray-800">
+          {esEdicion ? 'Editar Canción' : 'Nueva Canción'}
+        </h1>
+      </header>
+
+      <div className="flex-1 p-4 flex flex-col gap-4 max-w-lg mx-auto w-full">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+          <input
+            className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base"
+            placeholder="Nombre de la canción"
+            value={titulo}
+            onChange={e => setTitulo(e.target.value)}
+            autoFocus
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Autor</label>
+          <input
+            className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base"
+            placeholder="Nombre del autor"
+            value={autor}
+            onChange={e => setAutor(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tonalidad</label>
+          <select
+            className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base bg-white"
+            value={tonalidad}
+            onChange={e => setTonalidad(e.target.value)}
+          >
+            <option value="">Sin tonalidad</option>
+            {TONALIDADES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tempo (BPM)</label>
+          <input
+            type="number"
+            className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base"
+            placeholder="Ej: 120"
+            value={tempo}
+            onChange={e => setTempo(e.target.value)}
+            min="40"
+            max="300"
+          />
+        </div>
+      </div>
+
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex flex-col gap-2"
+        style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
+        <TouchButton variant="primary" fullWidth onClick={handleSubmit} disabled={loading || !titulo.trim()}>
+          {loading ? 'Guardando...' : 'Guardar'}
+        </TouchButton>
+        <TouchButton variant="secondary" fullWidth onClick={() => navigate(-1)}>
+          Cancelar
+        </TouchButton>
+      </div>
+    </div>
+  );
+}
