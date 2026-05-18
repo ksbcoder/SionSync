@@ -54,7 +54,7 @@ export function SeccionItem({
               <button onClick={onDuplicate} className={iconBtn} title="Duplicar">
                 <Copy className="w-4 h-4" />
               </button>
-              <button onClick={onDelete} className={`${iconBtn} hover:text-red-500`} title="Eliminar">
+              <button onClick={onDelete} className={`hidden md:flex ${iconBtn} hover:text-red-500`} title="Eliminar">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
