@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: theme('colors.app');
+  }
+
+  #root {
+    min-height: 100svh;
+  }
+
+  input, textarea, select {
+    font-size: 16px; /* evita auto-zoom en iOS */
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pb-safe-nav {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+}
