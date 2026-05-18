@@ -6,6 +6,8 @@ import { useSecciones } from '../../hooks/useSecciones';
 import { useNotas } from '../../hooks/useNotas';
 import { SeccionItem } from '../secciones/SeccionItem';
 import { BottomSheet } from '../layout/BottomSheet';
+import { ConfirmSheet } from '../ui/ConfirmSheet';
+import { SwipeableCard } from '../ui/SwipeableCard';
 import { SeccionForm } from '../secciones/SeccionForm';
 import { SkeletonList } from '../ui/Skeleton';
 import type { Cancion, TipoSeccion } from '../../types';
@@ -21,6 +23,8 @@ export function CancionDetalle() {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [addSeccionOpen, setAddSeccionOpen] = useState(false);
+  const [confirmCancion, setConfirmCancion] = useState(false);
+  const [confirmSeccionId, setConfirmSeccionId] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     if (!id) return;
@@ -33,7 +37,7 @@ export function CancionDetalle() {
   useEffect(() => { cargar(); }, [cargar]);
 
   const handleDelete = async () => {
-    if (!id || !confirm('¿Eliminar esta canción y todas sus secciones?')) return;
+    if (!id) return;
     await deleteCancion(id);
     navigate('/canciones');
   };
@@ -52,9 +56,9 @@ export function CancionDetalle() {
     await cargar();
   };
 
-  const handleDeleteSeccion = async (seccionId: string) => {
-    if (!confirm('¿Eliminar esta sección?')) return;
-    await deleteSeccion(seccionId);
+  const handleDeleteSeccion = async () => {
+    if (!confirmSeccionId) return;
+    await deleteSeccion(confirmSeccionId);
     await cargar();
   };
 
@@ -111,8 +115,14 @@ export function CancionDetalle() {
 
   if (!cancion) {
     return (
-      <div className="min-h-svh bg-gray-50 flex items-center justify-center">
+      <div className="min-h-svh bg-gray-50 flex flex-col items-center justify-center gap-4 p-8 text-center">
         <p className="text-gray-500">Canción no encontrada</p>
+        <button
+          onClick={() => navigate('/canciones')}
+          className="min-h-[44px] px-6 bg-brand-100 text-brand-900 rounded-lg font-medium text-sm hover:opacity-90"
+        >
+          Volver a canciones
+        </button>
       </div>
     );
   }
@@ -126,7 +136,7 @@ export function CancionDetalle() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="flex-1 text-lg font-semibold text-gray-800 truncate">{cancion.titulo}</h1>
-        <button onClick={() => setAddSeccionOpen(true)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-indigo-600 hover:bg-indigo-50 rounded-xl" title="Agregar sección">
+        <button onClick={() => setAddSeccionOpen(true)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-brand-700 hover:bg-brand-100 rounded-xl" title="Agregar sección">
           <PlusSquare className="w-5 h-5" />
         </button>
         <button onClick={() => navigate(`/cancion/${id}/presentacion`)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-xl" title="Modo presentación">
@@ -140,32 +150,37 @@ export function CancionDetalle() {
       {(cancion.autor || cancion.tonalidad || cancion.tempo) && (
         <div className="px-4 py-3 bg-white border-b border-gray-100 flex gap-2 overflow-x-auto">
           {cancion.autor && <span className="text-sm text-gray-600 shrink-0">{cancion.autor}</span>}
-          {cancion.tonalidad && <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-medium shrink-0">{cancion.tonalidad}</span>}
+          {cancion.tonalidad && <span className="bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full text-xs font-medium shrink-0">{cancion.tonalidad}</span>}
           {cancion.tempo && <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-medium shrink-0">{cancion.tempo} BPM</span>}
         </div>
       )}
 
       <main className="px-4 py-4 flex flex-col gap-3 max-w-2xl mx-auto">
         {secciones.map((seccion, idx) => (
-          <SeccionItem
+          <SwipeableCard
             key={seccion.id}
-            seccion={seccion}
-            canMoveUp={idx > 0}
-            canMoveDown={idx < secciones.length - 1}
-            onMoveUp={() => handleMover(seccion.id, 'arriba')}
-            onMoveDown={() => handleMover(seccion.id, 'abajo')}
-            onDelete={() => handleDeleteSeccion(seccion.id)}
-            onDuplicate={() => handleDuplicarSeccion(seccion.id)}
-            onUpdate={(data) => handleUpdateSeccion(seccion.id, data)}
-            onAddNota={(contenido) => handleAddNota(seccion.id, contenido)}
-            onUpdateNota={handleUpdateNota}
-            onDeleteNota={handleDeleteNota}
-          />
+            className="rounded-xl"
+            onDelete={() => setConfirmSeccionId(seccion.id)}
+          >
+            <SeccionItem
+              seccion={seccion}
+              canMoveUp={idx > 0}
+              canMoveDown={idx < secciones.length - 1}
+              onMoveUp={() => handleMover(seccion.id, 'arriba')}
+              onMoveDown={() => handleMover(seccion.id, 'abajo')}
+              onDelete={() => setConfirmSeccionId(seccion.id)}
+              onDuplicate={() => handleDuplicarSeccion(seccion.id)}
+              onUpdate={(data) => handleUpdateSeccion(seccion.id, data)}
+              onAddNota={(contenido) => handleAddNota(seccion.id, contenido)}
+              onUpdateNota={handleUpdateNota}
+              onDeleteNota={handleDeleteNota}
+            />
+          </SwipeableCard>
         ))}
 
         <button
           onClick={() => setAddSeccionOpen(true)}
-          className="w-full h-12 border-2 border-dashed border-gray-300 rounded-2xl text-gray-500 hover:border-indigo-400 hover:text-indigo-500 transition-colors flex items-center justify-center gap-2 font-medium"
+          className="w-full h-12 border-2 border-dashed border-gray-300 rounded-2xl text-gray-500 hover:border-brand-300 hover:text-brand-500 transition-colors flex items-center justify-center gap-2 font-medium"
         >
           <Plus className="w-4 h-4" />
           Agregar Sección
@@ -180,10 +195,10 @@ export function CancionDetalle() {
             Editar canción
           </button>
           <button onClick={() => { navigate(`/cancion/${id}/presentacion`); setMenuOpen(false); }}
-            className="w-full h-12 text-left px-4 rounded-xl hover:bg-indigo-50 text-indigo-600 font-medium">
+            className="w-full h-12 text-left px-4 rounded-xl hover:bg-brand-100 text-brand-700 font-medium">
             Modo presentación
           </button>
-          <button onClick={() => { handleDelete(); setMenuOpen(false); }}
+          <button onClick={() => { setConfirmCancion(true); setMenuOpen(false); }}
             className="w-full h-12 text-left px-4 rounded-xl hover:bg-red-50 text-red-500 font-medium">
             Eliminar canción
           </button>
@@ -199,6 +214,24 @@ export function CancionDetalle() {
           onCancelar={() => setAddSeccionOpen(false)}
         />
       </BottomSheet>
+
+      {/* Confirmar eliminar canción */}
+      <ConfirmSheet
+        isOpen={confirmCancion}
+        onClose={() => setConfirmCancion(false)}
+        onConfirm={handleDelete}
+        title="¿Eliminar esta canción?"
+        description="Se eliminarán todas sus secciones y acordes. Esta acción no se puede deshacer."
+      />
+
+      {/* Confirmar eliminar sección */}
+      <ConfirmSheet
+        isOpen={!!confirmSeccionId}
+        onClose={() => setConfirmSeccionId(null)}
+        onConfirm={handleDeleteSeccion}
+        title="¿Eliminar esta sección?"
+        description="Esta acción no se puede deshacer."
+      />
     </div>
   );
 }
