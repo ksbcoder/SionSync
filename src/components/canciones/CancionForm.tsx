@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
 import { TouchButton } from '../ui/TouchButton';
-import { TONALIDADES } from '../../utils/constants';
-import type { Cancion } from '../../types';
+import { TONALIDADES } from '../../domain';
+import type { Cancion } from '../../domain';
 
 interface CancionFormProps {
   cancionExistente?: Cancion;

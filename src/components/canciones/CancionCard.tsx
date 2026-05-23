@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Pencil, Presentation, Trash2 } from 'lucide-react';
 import { SwipeableCard } from '../ui/SwipeableCard';
-import type { Cancion } from '../../types';
+import type { Cancion } from '../../domain';
 
 interface CancionCardProps {
   cancion: Cancion;

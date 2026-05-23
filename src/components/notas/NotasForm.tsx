@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Nota } from '../../types';
+import type { Nota } from '../../domain';
 
 interface NotasFormProps {
   notas: Nota[];
@@ -18,6 +18,23 @@ export function NotasForm({ notas, onAdd, onUpdate, onDelete }: NotasFormProps) 
     if (!nuevo.trim()) return;
     await onAdd(nuevo.trim());
     setNuevo('');
+  };
+
+  const handleNuevoKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === ' ') {
+      e.preventDefault();
+      const input = e.currentTarget;
+      const start = input.selectionStart ?? nuevo.length;
+      const end = input.selectionEnd ?? nuevo.length;
+      const insertion = ' - ';
+      const newValue = nuevo.slice(0, start) + insertion + nuevo.slice(end);
+      setNuevo(newValue);
+      requestAnimationFrame(() => {
+        input.setSelectionRange(start + insertion.length, start + insertion.length);
+      });
+    } else if (e.key === 'Enter') {
+      handleAdd();
+    }
   };
 
   const startEdit = (nota: Nota) => {
@@ -86,7 +103,7 @@ export function NotasForm({ notas, onAdd, onUpdate, onDelete }: NotasFormProps) 
           placeholder="Ej: Am - F - C - G"
           value={nuevo}
           onChange={e => setNuevo(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          onKeyDown={handleNuevoKeyDown}
         />
         <button
           onClick={handleAdd}

@@ -7,7 +7,7 @@ import { CancionForm } from './components/canciones/CancionForm';
 import { CancionDetalle } from './components/canciones/CancionDetalle';
 import { CancionPresentacion } from './components/canciones/CancionPresentacion';
 import { useCanciones } from './hooks/useCanciones';
-import type { Cancion } from './types';
+import type { Cancion } from './domain';
 
 function CancionEditWrapper() {
   const { id } = useParams<{ id: string }>();
