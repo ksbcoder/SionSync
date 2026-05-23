@@ -18,21 +18,12 @@ export function useRoles() {
 
     supabase
       .from('user_roles')
-      .select('role_id')
+      .select('roles(name)')
       .eq('user_id', user.id)
-      .then(async ({ data: userRoles }) => {
-        if (!userRoles?.length) {
-          setRoles([]);
-          setLoading(false);
-          return;
-        }
-        const roleIds = userRoles.map(ur => ur.role_id);
-        const { data: rolesData } = await supabase
-          .from('roles')
-          .select('name')
-          .in('id', roleIds);
-        const names = (rolesData ?? []).map(r => r.name as RoleName);
-        console.log('[useRoles]', { userRoles, rolesData, names, userId: user.id });
+      .then(({ data }) => {
+        const names = (data ?? [])
+          .map((ur: any) => ur.roles?.name as RoleName)
+          .filter(Boolean);
         setRoles(names);
         setLoading(false);
       });
