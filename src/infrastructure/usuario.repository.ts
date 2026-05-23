@@ -1,0 +1,43 @@
+import { supabase } from './supabase';
+import type { UsuarioConRol, RoleName } from '../domain';
+
+export const usuarioRepository = {
+  async getAll(): Promise<UsuarioConRol[]> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*, user_roles(*, roles(name, description))')
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
+
+  async toggleActive(userId: string, active: boolean): Promise<void> {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ active })
+      .eq('id', userId);
+    if (error) throw new Error(error.message);
+  },
+
+  async changeRole(userId: string, newRole: RoleName): Promise<void> {
+    const { data: roles, error: rolesError } = await supabase
+      .from('roles')
+      .select('id, name');
+    if (rolesError) throw new Error(rolesError.message);
+
+    const roleRecord = roles?.find(r => r.name === newRole);
+    if (!roleRecord) throw new Error(`Rol '${newRole}' no encontrado`);
+
+    const { error: deleteError } = await supabase
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId)
+      .eq('module', 'global');
+    if (deleteError) throw new Error(deleteError.message);
+
+    const { error: insertError } = await supabase
+      .from('user_roles')
+      .insert({ user_id: userId, role_id: roleRecord.id, module: 'global' });
+    if (insertError) throw new Error(insertError.message);
+  },
+};

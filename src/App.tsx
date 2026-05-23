@@ -6,6 +6,8 @@ import { CancionList } from './components/canciones/CancionList';
 import { CancionForm } from './components/canciones/CancionForm';
 import { CancionDetalle } from './components/canciones/CancionDetalle';
 import { CancionPresentacion } from './components/canciones/CancionPresentacion';
+import { AdminHome } from './components/admin/AdminHome';
+import { UsuarioList } from './components/admin/UsuarioList';
 import { useCanciones } from './hooks/useCanciones';
 import { AuthProvider } from './hooks/useAuth';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -60,6 +62,14 @@ export default function App() {
             } />
             <Route path="/cancion/:id/presentacion" element={
               <CancionPresentacion />
+            } />
+
+            {/* Administración */}
+            <Route path="/administracion" element={
+              <AdminHome />
+            } />
+            <Route path="/administracion/usuarios" element={
+              <UsuarioList />
             } />
           </Routes>
         </ProtectedRoute>

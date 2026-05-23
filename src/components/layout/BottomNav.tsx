@@ -29,7 +29,7 @@ export function BottomNav() {
         className={({ isActive }) => navItemClass(isActive)}
       >
         <LayoutGrid className="w-5 h-5 mb-0.5" />
-        Menú
+        Inicio
       </NavLink>
     </nav>
   );

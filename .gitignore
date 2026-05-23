@@ -5,6 +5,9 @@
 .env
 .env.production
 
+# Google OAuth credentials
+client_secret*.json
+
 # Logs
 logs
 *.log
