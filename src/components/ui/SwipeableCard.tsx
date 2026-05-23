@@ -85,6 +85,8 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
 
     if (decided.current === 'v') return;
 
+    e.preventDefault(); // Bloquear scroll vertical mientras se desliza horizontalmente
+
     const val = Math.max(-panelWidth, Math.min(0, baseOffset.current + dx));
     currentOffset.current = val;
 
@@ -129,7 +131,7 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
       </div>
       <div
         className={`relative ${animating ? 'transition-transform duration-200' : ''}`}
-        style={{ transform: `translateX(${offset}px)` }}
+        style={{ transform: `translateX(${offset}px)`, touchAction: 'pan-y' }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
