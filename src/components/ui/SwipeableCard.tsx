@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 
 const ACTION_WIDTH = 68;
-const DEAD_ZONE = 10; // px antes de decidir dirección horizontal vs vertical
+const DEAD_ZONE = 10;
 
 export interface SwipeAction {
   icon: React.ReactNode;
@@ -20,6 +20,7 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
   const startX = useRef(0);
   const startY = useRef(0);
   const baseOffset = useRef(0);
+  const currentOffset = useRef(0); // Siempre tiene el valor real, sin stale closure
   const dragging = useRef(false);
   const decided = useRef<'h' | 'v' | null>(null);
   const [offset, setOffset] = useState(0);
@@ -30,20 +31,31 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
   useEffect(() => {
     if (offset === 0) return;
 
+    let active = true;
+
     const handleOutsideTouch = (e: TouchEvent) => {
       if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
         setAnimating(true);
         setOffset(0);
+        currentOffset.current = 0;
       }
     };
     const handleScroll = () => {
       setAnimating(true);
       setOffset(0);
+      currentOffset.current = 0;
     };
 
-    document.addEventListener('touchstart', handleOutsideTouch, { passive: true });
-    document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    // Pequeño delay para no capturar scroll residual del gesto
+    const timer = setTimeout(() => {
+      if (!active) return;
+      document.addEventListener('touchstart', handleOutsideTouch, { passive: true });
+      document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    }, 100);
+
     return () => {
+      active = false;
+      clearTimeout(timer);
       document.removeEventListener('touchstart', handleOutsideTouch);
       document.removeEventListener('scroll', handleScroll, { capture: true });
     };
@@ -52,10 +64,10 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
   const onTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX;
     startY.current = e.touches[0].clientY;
-    baseOffset.current = offset;
+    baseOffset.current = currentOffset.current;
     dragging.current = true;
     decided.current = null;
-    setAnimating(false); // Sin transición CSS durante el drag
+    setAnimating(false);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
@@ -63,7 +75,6 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
     const dx = e.touches[0].clientX - startX.current;
     const dy = e.touches[0].clientY - startY.current;
 
-    // Zona muerta: decidir si es swipe horizontal o scroll vertical
     if (!decided.current) {
       if (Math.abs(dx) > DEAD_ZONE || Math.abs(dy) > DEAD_ZONE) {
         decided.current = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
@@ -71,22 +82,26 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
       return;
     }
 
-    if (decided.current === 'v') return; // Dejar que la lista haga scroll
+    if (decided.current === 'v') return;
 
-    const newOffset = Math.max(-panelWidth, Math.min(0, baseOffset.current + dx));
-    setOffset(newOffset);
+    const val = Math.max(-panelWidth, Math.min(0, baseOffset.current + dx));
+    currentOffset.current = val;
+    setOffset(val);
   };
 
   const onTouchEnd = () => {
     dragging.current = false;
 
     if (decided.current === 'h') {
-      // Snap: si pasó el umbral de un botón, abrir; si no, cerrar
       setAnimating(true);
-      setOffset(offset <= -ACTION_WIDTH ? -panelWidth : 0);
+      // Usar ref en vez de state para evitar stale closure
+      const snapTo = currentOffset.current <= -ACTION_WIDTH ? -panelWidth : 0;
+      currentOffset.current = snapTo;
+      setOffset(snapTo);
     } else if (baseOffset.current !== 0) {
-      // Tap sobre la card abierta sin movimiento → cerrar
+      // Tap sobre card abierta sin movimiento → cerrar
       setAnimating(true);
+      currentOffset.current = 0;
       setOffset(0);
     }
 
@@ -100,7 +115,7 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
           <button
             key={i}
             className={`flex-1 flex items-center justify-center ${action.bg}`}
-            onClick={() => { action.onClick(); setAnimating(true); setOffset(0); }}
+            onClick={() => { action.onClick(); setAnimating(true); currentOffset.current = 0; setOffset(0); }}
           >
             {action.icon}
           </button>
