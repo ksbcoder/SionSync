@@ -33,7 +33,7 @@ export function Home() {
           </div>
           <button
             onClick={signOut}
-            className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors text-sm"
+            className="flex items-center gap-1.5 text-brand-700 hover:text-brand-900 transition-colors text-sm"
             title="Cerrar sesión"
           >
             <LogOut className="w-4 h-4" />
