@@ -1,16 +1,23 @@
 import React, { useRef, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+
+const ACTION_WIDTH = 68;
+
+export interface SwipeAction {
+  icon: React.ReactNode;
+  bg: string;
+  onClick: () => void;
+}
 
 interface SwipeableCardProps {
   children: React.ReactNode;
-  onDelete: () => void;
+  actions: SwipeAction[];
   className?: string;
 }
 
-export function SwipeableCard({ children, onDelete, className = 'rounded-2xl' }: SwipeableCardProps) {
+export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: SwipeableCardProps) {
   const startX = useRef(0);
   const [offset, setOffset] = useState(0);
-  const THRESHOLD = 80;
+  const panelWidth = actions.length * ACTION_WIDTH;
 
   const onTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX;
@@ -18,11 +25,11 @@ export function SwipeableCard({ children, onDelete, className = 'rounded-2xl' }:
 
   const onTouchMove = (e: React.TouchEvent) => {
     const diff = e.touches[0].clientX - startX.current;
-    if (diff < 0) setOffset(Math.max(diff, -THRESHOLD));
+    if (diff < 0) setOffset(Math.max(diff, -panelWidth));
   };
 
   const onTouchEnd = () => {
-    if (offset <= -THRESHOLD) setOffset(-THRESHOLD);
+    if (offset <= -ACTION_WIDTH) setOffset(-panelWidth);
     else setOffset(0);
   };
 
@@ -30,11 +37,16 @@ export function SwipeableCard({ children, onDelete, className = 'rounded-2xl' }:
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
-      <div
-        className="absolute right-0 top-0 bottom-0 w-20 bg-red-500 flex items-center justify-center"
-        onClick={() => { onDelete(); reset(); }}
-      >
-        <Trash2 className="w-5 h-5 text-white" />
+      <div className="absolute right-0 top-0 bottom-0 flex" style={{ width: panelWidth }}>
+        {actions.map((action, i) => (
+          <button
+            key={i}
+            className={`flex-1 flex items-center justify-center ${action.bg}`}
+            onClick={() => { action.onClick(); reset(); }}
+          >
+            {action.icon}
+          </button>
+        ))}
       </div>
       <div
         className="relative transition-transform duration-200"
