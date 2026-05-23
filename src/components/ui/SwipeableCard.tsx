@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 
 const ACTION_WIDTH = 68;
 const DEAD_ZONE = 10;
+const SNAP_THRESHOLD = 40; // px para fijar abierto (después de la zona muerta)
 
 export interface SwipeAction {
   icon: React.ReactNode;
@@ -87,8 +88,8 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
     const val = Math.max(-panelWidth, Math.min(0, baseOffset.current + dx));
     currentOffset.current = val;
 
-    // Si pasó el umbral → fijar abierto y dejar de seguir el dedo
-    if (val <= -ACTION_WIDTH) {
+    // Fijar abierto solo si estaba cerrada y pasó el umbral
+    if (val <= -SNAP_THRESHOLD && baseOffset.current === 0) {
       dragging.current = false;
       decided.current = null;
       currentOffset.current = -panelWidth;
@@ -103,13 +104,8 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
   const onTouchEnd = () => {
     dragging.current = false;
 
-    if (decided.current === 'h') {
-      // No llegó al umbral → cerrar
-      setAnimating(true);
-      currentOffset.current = 0;
-      setOffset(0);
-    } else if (baseOffset.current !== 0) {
-      // Tap sobre card abierta sin movimiento → cerrar
+    if (decided.current === 'h' || baseOffset.current !== 0) {
+      // Cualquier gesto horizontal o tap en card abierta → cerrar
       setAnimating(true);
       currentOffset.current = 0;
       setOffset(0);
