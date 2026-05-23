@@ -32,6 +32,7 @@ export function useRoles() {
           .select('name')
           .in('id', roleIds);
         const names = (rolesData ?? []).map(r => r.name as RoleName);
+        console.log('[useRoles]', { userRoles, rolesData, names, userId: user.id });
         setRoles(names);
         setLoading(false);
       });

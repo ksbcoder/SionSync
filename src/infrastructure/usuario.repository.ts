@@ -3,12 +3,21 @@ import type { UsuarioConRol, RoleName } from '../domain';
 
 export const usuarioRepository = {
   async getAll(): Promise<UsuarioConRol[]> {
-    const { data, error } = await supabase
+    const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('*, user_roles(*, roles(name, description))')
+      .select('*')
       .order('created_at', { ascending: true });
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    if (profilesError) throw new Error(profilesError.message);
+
+    const { data: userRoles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('*, roles(name, description)');
+    if (rolesError) throw new Error(rolesError.message);
+
+    return (profiles ?? []).map(profile => ({
+      ...profile,
+      user_roles: (userRoles ?? []).filter(ur => ur.user_id === profile.id),
+    }));
   },
 
   async toggleActive(userId: string, active: boolean): Promise<void> {
