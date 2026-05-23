@@ -6,6 +6,7 @@ export interface Cancion {
   autor: string | null;
   tonalidad: string | null;
   tempo: number | null;
+  user_id: string;
   created_at: string;
   updated_at: string;
   secciones?: Seccion[];
