@@ -38,9 +38,12 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
   const onTouchMove = (e: React.TouchEvent) => {
     const diff = e.touches[0].clientX - startX.current;
     if (diff < 0) setOffset(Math.max(diff, -panelWidth));
+    if (diff < 0) setOffset(Math.max(diff, -panelWidth));
   };
 
   const onTouchEnd = () => {
+    if (offset <= -ACTION_WIDTH) setOffset(-panelWidth);
+    else setOffset(0);
     if (offset <= -ACTION_WIDTH) setOffset(-panelWidth);
     else setOffset(0);
   };
