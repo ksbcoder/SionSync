@@ -18,10 +18,20 @@ export function useRoles() {
 
     supabase
       .from('user_roles')
-      .select('roles(name)')
+      .select('role_id')
       .eq('user_id', user.id)
-      .then(({ data }) => {
-        const names = data?.flatMap((ur: any) => ur.roles?.name ? [ur.roles.name as RoleName] : []) ?? [];
+      .then(async ({ data: userRoles }) => {
+        if (!userRoles?.length) {
+          setRoles([]);
+          setLoading(false);
+          return;
+        }
+        const roleIds = userRoles.map(ur => ur.role_id);
+        const { data: rolesData } = await supabase
+          .from('roles')
+          .select('name')
+          .in('id', roleIds);
+        const names = (rolesData ?? []).map(r => r.name as RoleName);
         setRoles(names);
         setLoading(false);
       });
