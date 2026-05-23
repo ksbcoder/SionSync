@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MoreVertical, Plus, Presentation, Trash2 } from 'lucide-react';
 import { supabase } from '../../infrastructure/supabase';
 import { useCancionDetalle } from '../../hooks/useCancionDetalle';
+import { useCanEdit } from '../../hooks/useRoles';
 import { SeccionItem } from '../secciones/SeccionItem';
 import { BottomSheet } from '../layout/BottomSheet';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
@@ -26,13 +27,14 @@ export function CancionDetalle() {
   const [confirmSeccionId, setConfirmSeccionId] = useState<string | null>(null);
   const [detallesOpen, setDetallesOpen] = useState(false);
   const [creadorNombre, setCreadorNombre] = useState<string | null>(null);
+  const canEdit = useCanEdit(cancion?.user_id);
 
   useEffect(() => {
-    if (!cancion || !(cancion as any).user_id) return;
+    if (!cancion?.user_id) return;
     supabase
       .from('profiles')
       .select('display_name')
-      .eq('id', (cancion as any).user_id)
+      .eq('id', cancion.user_id)
       .single()
       .then(({ data }) => setCreadorNombre(data?.display_name ?? null));
   }, [cancion]);
@@ -83,11 +85,11 @@ export function CancionDetalle() {
           <SwipeableCard
             key={seccion.id}
             className="rounded-xl"
-            actions={[{
+            actions={canEdit ? [{
               icon: <Trash2 className="w-5 h-5 text-white" />,
               bg: 'bg-red-500',
               onClick: () => setConfirmSeccionId(seccion.id),
-            }]}
+            }] : []}
           >
             <SeccionItem
               seccion={seccion}
@@ -106,21 +108,25 @@ export function CancionDetalle() {
         ))}
       </main>
 
-      <button
-        onClick={() => setAddSeccionOpen(true)}
-        className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
-        style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom) + 0.75rem)' }}
-        aria-label="Agregar sección"
-      >
-        <Plus className="w-6 h-6" />
-      </button>
+      {canEdit && (
+        <button
+          onClick={() => setAddSeccionOpen(true)}
+          className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
+          style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom) + 0.75rem)' }}
+          aria-label="Agregar sección"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      )}
 
       <BottomSheet isOpen={menuOpen} onClose={() => setMenuOpen(false)} title="Opciones">
         <div className="flex flex-col gap-2">
-          <button onClick={() => { navigate(`/cancion/${id}/editar`); setMenuOpen(false); }}
-            className="w-full h-12 text-left px-4 rounded-xl hover:bg-gray-100 text-gray-700 font-medium">
-            Editar canción
-          </button>
+          {canEdit && (
+            <button onClick={() => { navigate(`/cancion/${id}/editar`); setMenuOpen(false); }}
+              className="w-full h-12 text-left px-4 rounded-xl hover:bg-gray-100 text-gray-700 font-medium">
+              Editar canción
+            </button>
+          )}
           <button onClick={() => { navigate(`/cancion/${id}/presentacion`); setMenuOpen(false); }}
             className="w-full h-12 text-left px-4 rounded-xl hover:bg-brand-100 text-brand-700 font-medium">
             Modo presentación
@@ -129,10 +135,12 @@ export function CancionDetalle() {
             className="w-full h-12 text-left px-4 rounded-xl hover:bg-gray-100 text-gray-700 font-medium">
             Detalles
           </button>
-          <button onClick={() => { setConfirmCancion(true); setMenuOpen(false); }}
-            className="w-full h-12 text-left px-4 rounded-xl hover:bg-red-50 text-red-500 font-medium">
-            Eliminar canción
-          </button>
+          {canEdit && (
+            <button onClick={() => { setConfirmCancion(true); setMenuOpen(false); }}
+              className="w-full h-12 text-left px-4 rounded-xl hover:bg-red-50 text-red-500 font-medium">
+              Eliminar canción
+            </button>
+          )}
         </div>
       </BottomSheet>
 

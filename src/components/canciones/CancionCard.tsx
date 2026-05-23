@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Pencil, Presentation, Trash2 } from 'lucide-react';
 import { SwipeableCard } from '../ui/SwipeableCard';
+import { useCanEdit } from '../../hooks/useRoles';
 import type { Cancion } from '../../domain';
 
 interface CancionCardProps {
@@ -10,27 +11,28 @@ interface CancionCardProps {
 
 export function CancionCard({ cancion, onDelete }: CancionCardProps) {
   const navigate = useNavigate();
+  const canEdit = useCanEdit(cancion.user_id);
+
+  const actions = [
+    ...(canEdit ? [{
+      icon: <Pencil className="w-5 h-5 text-white" />,
+      bg: 'bg-indigo-500',
+      onClick: () => navigate(`/cancion/${cancion.id}/editar`),
+    }] : []),
+    {
+      icon: <Presentation className="w-5 h-5 text-white" />,
+      bg: 'bg-violet-500',
+      onClick: () => navigate(`/cancion/${cancion.id}/presentacion`),
+    },
+    ...(canEdit ? [{
+      icon: <Trash2 className="w-5 h-5 text-white" />,
+      bg: 'bg-red-500',
+      onClick: () => onDelete(cancion.id),
+    }] : []),
+  ];
 
   return (
-    <SwipeableCard
-      actions={[
-        {
-          icon: <Pencil className="w-5 h-5 text-white" />,
-          bg: 'bg-indigo-500',
-          onClick: () => navigate(`/cancion/${cancion.id}/editar`),
-        },
-        {
-          icon: <Presentation className="w-5 h-5 text-white" />,
-          bg: 'bg-violet-500',
-          onClick: () => navigate(`/cancion/${cancion.id}/presentacion`),
-        },
-        {
-          icon: <Trash2 className="w-5 h-5 text-white" />,
-          bg: 'bg-red-500',
-          onClick: () => onDelete(cancion.id),
-        },
-      ]}
-    >
+    <SwipeableCard actions={actions}>
       <div
         className="bg-white p-4 cursor-pointer active:bg-indigo-50"
         onClick={() => navigate(`/cancion/${cancion.id}`)}

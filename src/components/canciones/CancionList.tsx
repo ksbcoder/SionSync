@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
+import { useRoles } from '../../hooks/useRoles';
 import { CancionCard } from './CancionCard';
 import { DotLoader } from '../ui/DotLoader';
 import { EmptyState } from '../ui/EmptyState';
@@ -12,6 +13,7 @@ import type { Cancion } from '../../domain';
 export function CancionList() {
   const navigate = useNavigate();
   const { getCanciones, buscarCanciones, deleteCancion, loading } = useCanciones();
+  const { canCreateCanciones } = useRoles();
   const [canciones, setCanciones] = useState<Cancion[]>([]);
   const [query, setQuery] = useState('');
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -34,7 +36,7 @@ export function CancionList() {
 
   return (
     <div className="min-h-svh bg-[#f8faff]">
-      <Header onNuevaCancion={() => navigate('/cancion/nueva')} />
+      <Header onNuevaCancion={canCreateCanciones ? () => navigate('/cancion/nueva') : undefined} />
 
       <div className="sticky top-0 bg-[#f8faff] px-4 pt-4 pb-2 z-20 md:top-[65px]">
         <div className="relative max-w-2xl mx-auto">
@@ -65,14 +67,16 @@ export function CancionList() {
         )}
       </main>
 
-      <button
-        onClick={() => navigate('/cancion/nueva')}
-        className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
-        style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom) + 0.75rem)' }}
-        aria-label="Nueva canción"
-      >
-        <Plus className="w-6 h-6" />
-      </button>
+      {canCreateCanciones && (
+        <button
+          onClick={() => navigate('/cancion/nueva')}
+          className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
+          style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom) + 0.75rem)' }}
+          aria-label="Nueva canción"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      )}
 
       <ConfirmSheet
         isOpen={!!confirmId}
