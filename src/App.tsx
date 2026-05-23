@@ -7,6 +7,8 @@ import { CancionForm } from './components/canciones/CancionForm';
 import { CancionDetalle } from './components/canciones/CancionDetalle';
 import { CancionPresentacion } from './components/canciones/CancionPresentacion';
 import { useCanciones } from './hooks/useCanciones';
+import { AuthProvider } from './hooks/useAuth';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import type { Cancion } from './domain';
 
 function CancionEditWrapper() {
@@ -25,39 +27,43 @@ function CancionEditWrapper() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
+      <AuthProvider>
+        <ProtectedRoute>
+          <Routes>
+            <Route path="/" element={<Home />} />
 
-        {/* Canciones */}
-        <Route path="/canciones" element={
-          <Layout>
-            <CancionList />
-          </Layout>
-        } />
-        <Route path="/canciones/buscar" element={
-          <Layout>
-            <CancionList />
-          </Layout>
-        } />
-        <Route path="/cancion/nueva" element={
-          <Layout hideBottomNav>
-            <CancionForm />
-          </Layout>
-        } />
-        <Route path="/cancion/:id" element={
-          <Layout hideBottomNav>
-            <CancionDetalle />
-          </Layout>
-        } />
-        <Route path="/cancion/:id/editar" element={
-          <Layout hideBottomNav>
-            <CancionEditWrapper />
-          </Layout>
-        } />
-        <Route path="/cancion/:id/presentacion" element={
-          <CancionPresentacion />
-        } />
-      </Routes>
+            {/* Canciones */}
+            <Route path="/canciones" element={
+              <Layout>
+                <CancionList />
+              </Layout>
+            } />
+            <Route path="/canciones/buscar" element={
+              <Layout>
+                <CancionList />
+              </Layout>
+            } />
+            <Route path="/cancion/nueva" element={
+              <Layout hideBottomNav>
+                <CancionForm />
+              </Layout>
+            } />
+            <Route path="/cancion/:id" element={
+              <Layout hideBottomNav>
+                <CancionDetalle />
+              </Layout>
+            } />
+            <Route path="/cancion/:id/editar" element={
+              <Layout hideBottomNav>
+                <CancionEditWrapper />
+              </Layout>
+            } />
+            <Route path="/cancion/:id/presentacion" element={
+              <CancionPresentacion />
+            } />
+          </Routes>
+        </ProtectedRoute>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

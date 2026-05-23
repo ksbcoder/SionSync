@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { Music2, Settings } from 'lucide-react';
+import { Music2, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 const OPCIONES = [
   {
@@ -20,15 +21,27 @@ const OPCIONES = [
 
 export function Home() {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-svh bg-app flex flex-col">
       <header className="px-6 pt-12 pb-8">
-        <div className="flex items-center gap-3 mb-1">
-          <Music2 className="w-7 h-7 text-brand-700" />
-          <h1 className="text-2xl font-bold text-brand-900">SionSync</h1>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-3">
+            <Music2 className="w-7 h-7 text-brand-700" />
+            <h1 className="text-2xl font-bold text-brand-900">SionSync</h1>
+          </div>
+          <button
+            onClick={signOut}
+            className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors text-sm"
+            title="Cerrar sesión"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
-        <p className="text-slate-500 text-sm pl-10">¿Qué quieres hacer hoy?</p>
+        <p className="text-slate-500 text-sm pl-10">
+          Hola, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'usuario'}
+        </p>
       </header>
 
       <main className="flex-1 px-4 flex flex-col gap-3 max-w-lg mx-auto w-full">
