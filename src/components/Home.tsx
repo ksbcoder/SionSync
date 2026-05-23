@@ -1,12 +1,17 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music2, Settings, CalendarDays, LogOut } from 'lucide-react';
+import { Music2, Settings, CalendarDays, LogOut, UserCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useRoles } from '../hooks/useRoles';
+import { useProfile } from '../hooks/useProfile';
+import { ProfileSheet } from './ProfileSheet';
 
 export function Home() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useRoles();
+  const { displayName, reload: reloadProfile } = useProfile();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const opciones = [
     {
@@ -40,16 +45,25 @@ export function Home() {
             <Music2 className="w-7 h-7 text-brand-700" />
             <h1 className="text-2xl font-bold text-brand-900">SionSync</h1>
           </div>
-          <button
-            onClick={signOut}
-            className="flex items-center gap-1.5 text-brand-700 hover:text-brand-900 transition-colors text-sm"
-            title="Cerrar sesión"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setProfileOpen(true)}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-brand-700 hover:text-brand-900 transition-colors"
+              title="Mi perfil"
+            >
+              <UserCircle className="w-5 h-5" />
+            </button>
+            <button
+              onClick={signOut}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-brand-700 hover:text-brand-900 transition-colors"
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         <p className="text-slate-500 text-sm pl-10">
-          Hola, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'usuario'}
+          Hola, {displayName || user?.email?.split('@')[0] || 'usuario'}
         </p>
       </header>
 
@@ -75,6 +89,8 @@ export function Home() {
           </button>
         ))}
       </main>
+
+      <ProfileSheet isOpen={profileOpen} onClose={() => setProfileOpen(false)} onNameUpdated={reloadProfile} />
     </div>
   );
 }

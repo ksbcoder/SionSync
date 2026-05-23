@@ -167,6 +167,8 @@ export function UsuarioList() {
             ? `${confirmToggle.display_name} no podrá acceder a la aplicación hasta que lo reactives.`
             : `${confirmToggle?.display_name} podrá acceder nuevamente a la aplicación.`
         }
+        confirmLabel={confirmToggle?.active ? 'Desactivar' : 'Activar'}
+        variant={confirmToggle?.active ? 'danger' : 'success'}
       />
     </div>
   );

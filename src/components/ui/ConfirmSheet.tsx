@@ -8,9 +8,10 @@ interface ConfirmSheetProps {
   title: string;
   description?: string;
   confirmLabel?: string;
+  variant?: 'danger' | 'success';
 }
 
-export function ConfirmSheet({ isOpen, onClose, onConfirm, title, description, confirmLabel = 'Eliminar' }: ConfirmSheetProps) {
+export function ConfirmSheet({ isOpen, onClose, onConfirm, title, description, confirmLabel = 'Eliminar', variant = 'danger' }: ConfirmSheetProps) {
   const isDesktop = useIsDesktop();
 
   if (!isOpen) return null;
@@ -24,7 +25,9 @@ export function ConfirmSheet({ isOpen, onClose, onConfirm, title, description, c
       <div className="flex flex-col gap-2">
         <button
           onClick={() => { onConfirm(); onClose(); }}
-          className="w-full min-h-[44px] rounded-lg bg-red-500 text-white font-medium text-sm hover:bg-red-600 transition-colors"
+          className={`w-full min-h-[44px] rounded-lg text-white font-medium text-sm transition-colors ${
+            variant === 'danger' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'
+          }`}
         >
           {confirmLabel}
         </button>

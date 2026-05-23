@@ -28,6 +28,24 @@ export const usuarioRepository = {
     if (error) throw new Error(error.message);
   },
 
+  async getProfile(userId: string): Promise<{ display_name: string } | null> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('id', userId)
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async updateDisplayName(userId: string, displayName: string): Promise<void> {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ display_name: displayName })
+      .eq('id', userId);
+    if (error) throw new Error(error.message);
+  },
+
   async changeRole(userId: string, newRole: RoleName): Promise<void> {
     const { data: roles, error: rolesError } = await supabase
       .from('roles')
