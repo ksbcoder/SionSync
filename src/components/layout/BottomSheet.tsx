@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useIsDesktop } from '../../hooks/useMediaQuery';
 
 interface BottomSheetProps {
@@ -19,22 +20,18 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
 
   if (!isOpen) return null;
 
-  if (isDesktop) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[85vh] flex flex-col">
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-            <button onClick={onClose} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-lg">✕</button>
-          </div>
-          <div className="overflow-y-auto p-4">{children}</div>
+  const modal = isDesktop ? (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[85vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+          <button onClick={onClose} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-lg">✕</button>
         </div>
+        <div className="overflow-y-auto p-4">{children}</div>
       </div>
-    );
-  }
-
-  return (
+    </div>
+  ) : (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl max-h-[85vh] flex flex-col animate-slide-up">
@@ -54,4 +51,6 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
