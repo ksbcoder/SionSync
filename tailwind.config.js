@@ -48,9 +48,14 @@ export default {
           '0%':   { transform: 'translateY(100%)' },
           '100%': { transform: 'translateY(0)' },
         },
+        'dot-bounce': {
+          '0%, 80%, 100%': { transform: 'scale(0.4)', opacity: '0.3' },
+          '40%':           { transform: 'scale(1)',   opacity: '1' },
+        },
       },
       animation: {
         'slide-up': 'slide-up 0.3s ease-out',
+        'dot-bounce': 'dot-bounce 1.2s ease-in-out infinite',
       },
     },
   },

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Plus } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
 import { CancionCard } from './CancionCard';
-import { SkeletonList } from '../ui/Skeleton';
+import { DotLoader } from '../ui/DotLoader';
 import { EmptyState } from '../ui/EmptyState';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { Header } from '../layout/Header';
@@ -50,7 +50,7 @@ export function CancionList() {
 
       <main className="px-4 pb-safe-nav pt-2 max-w-2xl mx-auto">
         {loading && !canciones.length ? (
-          <SkeletonList />
+          <DotLoader text="Cargando canciones..." />
         ) : canciones.length === 0 ? (
           <EmptyState
             title={query ? 'Sin resultados' : 'No hay canciones aún'}

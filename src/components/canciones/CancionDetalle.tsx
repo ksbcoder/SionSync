@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MoreVertical, Plus, Presentation, PlusSquare, Trash2 } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Plus, Presentation, Trash2 } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
 import { useSecciones } from '../../hooks/useSecciones';
 import { useNotas } from '../../hooks/useNotas';
@@ -9,7 +9,7 @@ import { BottomSheet } from '../layout/BottomSheet';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { SwipeableCard } from '../ui/SwipeableCard';
 import { SeccionForm } from '../secciones/SeccionForm';
-import { SkeletonList } from '../ui/Skeleton';
+import { DotLoader } from '../ui/DotLoader';
 import type { Cancion, TipoSeccion } from '../../types';
 
 export function CancionDetalle() {
@@ -107,8 +107,8 @@ export function CancionDetalle() {
 
   if (loading) {
     return (
-      <div className="min-h-svh bg-gray-50 p-4">
-        <SkeletonList count={3} />
+      <div className="min-h-svh bg-gray-50 flex items-center justify-center">
+        <DotLoader text="Cargando canción..." />
       </div>
     );
   }
@@ -136,9 +136,6 @@ export function CancionDetalle() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="flex-1 text-lg font-semibold text-gray-800 truncate">{cancion.titulo}</h1>
-        <button onClick={() => setAddSeccionOpen(true)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-brand-700 hover:bg-brand-100 rounded-xl" title="Agregar sección">
-          <PlusSquare className="w-5 h-5" />
-        </button>
         <button onClick={() => navigate(`/cancion/${id}/presentacion`)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-xl" title="Modo presentación">
           <Presentation className="w-5 h-5" />
         </button>
@@ -182,14 +179,16 @@ export function CancionDetalle() {
           </SwipeableCard>
         ))}
 
-        <button
-          onClick={() => setAddSeccionOpen(true)}
-          className="w-full h-12 border-2 border-dashed border-gray-300 rounded-2xl text-gray-500 hover:border-brand-300 hover:text-brand-500 transition-colors flex items-center justify-center gap-2 font-medium"
-        >
-          <Plus className="w-4 h-4" />
-          Agregar Sección
-        </button>
       </main>
+
+      <button
+        onClick={() => setAddSeccionOpen(true)}
+        className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
+        style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom) + 0.75rem)' }}
+        aria-label="Agregar sección"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
 
       {/* Menú opciones */}
       <BottomSheet isOpen={menuOpen} onClose={() => setMenuOpen(false)} title="Opciones">
