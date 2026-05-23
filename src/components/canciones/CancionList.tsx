@@ -7,7 +7,7 @@ import { DotLoader } from '../ui/DotLoader';
 import { EmptyState } from '../ui/EmptyState';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { Header } from '../layout/Header';
-import type { Cancion } from '../../types';
+import type { Cancion } from '../../domain';
 
 export function CancionList() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export function CancionList() {
 
   const cargar = useCallback(async () => {
     const data = query.trim() ? await buscarCanciones(query) : await getCanciones();
-    setCanciones(data);
+    setCanciones(data ?? []);
   }, [query, getCanciones, buscarCanciones]);
 
   useEffect(() => {

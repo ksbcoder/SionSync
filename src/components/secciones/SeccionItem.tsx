@@ -5,7 +5,7 @@ import { NotasDisplay } from '../notas/NotasDisplay';
 import { BottomSheet } from '../layout/BottomSheet';
 import { SeccionForm } from './SeccionForm';
 import { NotasForm } from '../notas/NotasForm';
-import type { Seccion, TipoSeccion, Nota } from '../../types';
+import type { Seccion, TipoSeccion, Nota } from '../../domain';
 
 interface SeccionItemProps {
   seccion: Seccion;
@@ -66,9 +66,7 @@ export function SeccionItem({
 
       <BottomSheet isOpen={editOpen} onClose={() => setEditOpen(false)} title="Editar sección">
         <SeccionForm
-          cancionId={seccion.cancion_id}
           seccion={seccion}
-          ordenSiguiente={seccion.orden}
           onGuardar={async (data) => { await onUpdate(data); setEditOpen(false); }}
           onCancelar={() => setEditOpen(false)}
         />

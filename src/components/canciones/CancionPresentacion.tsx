@@ -4,7 +4,7 @@ import { X, Play, Pause } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
 import { SeccionBadge } from '../secciones/SeccionBadge';
 import { NotasDisplay } from '../notas/NotasDisplay';
-import type { Cancion } from '../../types';
+import type { Cancion } from '../../domain';
 
 export function CancionPresentacion() {
   const { id } = useParams<{ id: string }>();

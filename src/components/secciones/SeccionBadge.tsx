@@ -1,5 +1,5 @@
-import { TIPOS_SECCION } from '../../utils/constants';
-import type { TipoSeccion } from '../../types';
+import { TIPOS_SECCION } from '../../domain';
+import type { TipoSeccion } from '../../domain';
 
 export function SeccionBadge({ tipo }: { tipo: TipoSeccion }) {
   const { label, bg, text } = TIPOS_SECCION[tipo];

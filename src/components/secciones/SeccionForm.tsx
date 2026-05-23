@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { TouchButton } from '../ui/TouchButton';
-import { TIPOS_SECCION } from '../../utils/constants';
-import type { TipoSeccion, Seccion } from '../../types';
+import { TIPOS_SECCION } from '../../domain';
+import type { TipoSeccion, Seccion } from '../../domain';
 
 interface SeccionFormProps {
-  cancionId: string;
   seccion?: Seccion;
-  ordenSiguiente: number;
   onGuardar: (data: { tipo: TipoSeccion; letra: string }) => Promise<void>;
   onCancelar: () => void;
 }
 
-export function SeccionForm({ seccion, ordenSiguiente: _ordenSiguiente, onGuardar, onCancelar }: SeccionFormProps) {
+export function SeccionForm({ seccion, onGuardar, onCancelar }: SeccionFormProps) {
   const [tipo, setTipo] = useState<TipoSeccion>(seccion?.tipo ?? 'verso');
   const [letra, setLetra] = useState(seccion?.letra ?? '');
   const [saving, setSaving] = useState(false);

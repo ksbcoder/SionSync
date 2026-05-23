@@ -1,4 +1,23 @@
-import type { TipoSeccion } from '../types';
+import type { Nota } from './nota';
+
+export type TipoSeccion = 'verso' | 'coro' | 'pre-coro' | 'puente' | 'intro' | 'outro' | 'final' | 'otro';
+
+export interface Seccion {
+  id: string;
+  cancion_id: string;
+  tipo: TipoSeccion;
+  orden: number;
+  letra: string;
+  created_at: string;
+  notas?: Nota[];
+}
+
+export interface SeccionInsert {
+  cancion_id: string;
+  tipo: TipoSeccion;
+  orden: number;
+  letra: string;
+}
 
 export const TIPOS_SECCION: Record<TipoSeccion, { label: string; bg: string; text: string }> = {
   verso:      { label: 'Verso',    bg: '#c7d2fe', text: '#312e81' },
@@ -11,9 +30,7 @@ export const TIPOS_SECCION: Record<TipoSeccion, { label: string; bg: string; tex
   otro:       { label: 'Otro',     bg: '#f1f5f9', text: '#475569' },
 };
 
-export const TONALIDADES = [
-  'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F',
-  'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
-  'Cm', 'C#m', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm',
-  'F#m', 'Gm', 'G#m', 'Am', 'A#m', 'Bbm', 'Bm',
-];
+export function calcularSiguienteOrden(secciones: { orden: number }[]): number {
+  if (secciones.length === 0) return 0;
+  return Math.max(...secciones.map(s => s.orden)) + 1;
+}
