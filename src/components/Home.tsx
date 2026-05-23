@@ -1,27 +1,36 @@
 import { useNavigate } from 'react-router-dom';
-import { Music2, Settings, LogOut } from 'lucide-react';
+import { Music2, Settings, CalendarDays, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-
-const OPCIONES = [
-  {
-    label: 'Canciones',
-    description: 'Gestiona y presenta canciones de alabanza',
-    icon: Music2,
-    ruta: '/canciones',
-    enabled: true,
-  },
-  {
-    label: 'Administración',
-    description: 'Próximamente',
-    icon: Settings,
-    ruta: '/administracion',
-    enabled: false,
-  },
-];
+import { useRoles } from '../hooks/useRoles';
 
 export function Home() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useRoles();
+
+  const opciones = [
+    {
+      label: 'Canciones',
+      description: 'Gestiona y presenta canciones de alabanza',
+      icon: Music2,
+      ruta: '/canciones',
+      enabled: true,
+    },
+    {
+      label: 'Administración',
+      description: 'Usuarios, roles y configuración',
+      icon: Settings,
+      ruta: '/administracion',
+      enabled: isAdmin,
+    },
+    {
+      label: 'Programación',
+      description: 'Próximamente',
+      icon: CalendarDays,
+      ruta: '/programacion',
+      enabled: false,
+    },
+  ];
 
   return (
     <div className="min-h-svh bg-app flex flex-col">
@@ -45,7 +54,7 @@ export function Home() {
       </header>
 
       <main className="flex-1 px-4 flex flex-col gap-3 max-w-lg mx-auto w-full">
-        {OPCIONES.map(({ label, description, icon: Icon, ruta, enabled }) => (
+        {opciones.map(({ label, description, icon: Icon, ruta, enabled }) => (
           <button
             key={ruta}
             onClick={() => enabled && navigate(ruta)}
