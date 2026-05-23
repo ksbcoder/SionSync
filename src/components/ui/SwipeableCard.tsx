@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 const ACTION_WIDTH = 68;
 
@@ -19,6 +19,18 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
   const [offset, setOffset] = useState(0);
   const panelWidth = actions.length * ACTION_WIDTH;
 
+  // Cierra el swipe al hacer click fuera o al hacer scroll
+  useEffect(() => {
+    if (offset === 0) return;
+    const close = () => setOffset(0);
+    document.addEventListener('click', close, { capture: true });
+    document.addEventListener('scroll', close, { passive: true, capture: true });
+    return () => {
+      document.removeEventListener('click', close, { capture: true });
+      document.removeEventListener('scroll', close, { capture: true });
+    };
+  }, [offset]);
+
   const onTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX;
   };
@@ -33,8 +45,6 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
     else setOffset(0);
   };
 
-  const reset = () => setOffset(0);
-
   return (
     <div className={`relative overflow-hidden ${className}`}>
       <div className="absolute right-0 top-0 bottom-0 flex" style={{ width: panelWidth }}>
@@ -42,7 +52,7 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
           <button
             key={i}
             className={`flex-1 flex items-center justify-center ${action.bg}`}
-            onClick={() => { action.onClick(); reset(); }}
+            onClick={() => { action.onClick(); setOffset(0); }}
           >
             {action.icon}
           </button>
@@ -54,7 +64,6 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        onClick={offset !== 0 ? reset : undefined}
       >
         {children}
       </div>
