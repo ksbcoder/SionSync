@@ -86,6 +86,17 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
 
     const val = Math.max(-panelWidth, Math.min(0, baseOffset.current + dx));
     currentOffset.current = val;
+
+    // Si pasó el umbral → fijar abierto y dejar de seguir el dedo
+    if (val <= -ACTION_WIDTH) {
+      dragging.current = false;
+      decided.current = null;
+      currentOffset.current = -panelWidth;
+      setAnimating(true);
+      setOffset(-panelWidth);
+      return;
+    }
+
     setOffset(val);
   };
 
@@ -93,11 +104,10 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
     dragging.current = false;
 
     if (decided.current === 'h') {
+      // No llegó al umbral → cerrar
       setAnimating(true);
-      // Usar ref en vez de state para evitar stale closure
-      const snapTo = currentOffset.current <= -ACTION_WIDTH ? -panelWidth : 0;
-      currentOffset.current = snapTo;
-      setOffset(snapTo);
+      currentOffset.current = 0;
+      setOffset(0);
     } else if (baseOffset.current !== 0) {
       // Tap sobre card abierta sin movimiento → cerrar
       setAnimating(true);
