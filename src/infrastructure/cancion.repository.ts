@@ -1,6 +1,12 @@
 import { supabase } from './supabase';
 import type { Cancion, CancionInsert } from '../domain';
 
+async function getUserId(): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No authenticated user');
+  return user.id;
+}
+
 export const cancionRepository = {
   async getAll(): Promise<Cancion[]> {
     const { data, error } = await supabase
@@ -24,9 +30,10 @@ export const cancionRepository = {
   },
 
   async create(data: CancionInsert): Promise<Cancion> {
+    const user_id = await getUserId();
     const { data: created, error } = await supabase
       .from('canciones')
-      .insert(data)
+      .insert({ ...data, user_id })
       .select()
       .single();
     if (error) throw new Error(error.message);
