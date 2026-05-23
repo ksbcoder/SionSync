@@ -26,9 +26,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      if (session?.user && (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED')) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile && profile.display_name !== session.user.user_metadata?.full_name) {
+          const { data } = await supabase.auth.updateUser({ data: { full_name: profile.display_name } });
+          if (data.user) setUser(data.user);
+        }
+      }
     });
 
     return () => subscription.unsubscribe();

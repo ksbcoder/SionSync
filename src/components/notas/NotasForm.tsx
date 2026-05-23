@@ -3,12 +3,13 @@ import type { Nota } from '../../domain';
 
 interface NotasFormProps {
   notas: Nota[];
+  canEdit: boolean;
   onAdd: (contenido: string) => Promise<void>;
   onUpdate: (id: string, contenido: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
-export function NotasForm({ notas, onAdd, onUpdate, onDelete }: NotasFormProps) {
+export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFormProps) {
   const [nuevo, setNuevo] = useState('');
   const [editando, setEditando] = useState<string | null>(null);
   const [editValor, setEditValor] = useState('');
@@ -86,33 +87,39 @@ export function NotasForm({ notas, onAdd, onUpdate, onDelete }: NotasFormProps) 
               <span className="flex-1 font-mono text-sm text-chord-dark bg-chord-bg border border-emerald-100 px-3 py-2 rounded-lg">
                 {nota.contenido}
               </span>
-              <button onClick={() => startEdit(nota)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-700">
-                Editar
-              </button>
-              <button onClick={() => setConfirmando(nota.id)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-red-500">
-                Eliminar
-              </button>
+              {canEdit && (
+                <>
+                  <button onClick={() => startEdit(nota)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-700">
+                    Editar
+                  </button>
+                  <button onClick={() => setConfirmando(nota.id)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-red-500">
+                    Eliminar
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
       ))}
 
-      <div className="flex gap-2 pt-1 border-t border-gray-100">
-        <input
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-base font-mono focus:outline-none focus:border-gray-500"
-          placeholder="Ej: Am - F - C - G"
-          value={nuevo}
-          onChange={e => setNuevo(e.target.value)}
-          onKeyDown={handleNuevoKeyDown}
-        />
-        <button
-          onClick={handleAdd}
-          disabled={!nuevo.trim()}
-          className="min-h-[44px] px-4 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40"
-        >
-          Agregar
-        </button>
-      </div>
+      {canEdit && (
+        <div className="flex gap-2 pt-1 border-t border-gray-100">
+          <input
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-base font-mono focus:outline-none focus:border-gray-500"
+            placeholder="Ej: Am - F - C - G"
+            value={nuevo}
+            onChange={e => setNuevo(e.target.value)}
+            onKeyDown={handleNuevoKeyDown}
+          />
+          <button
+            onClick={handleAdd}
+            disabled={!nuevo.trim()}
+            className="min-h-[44px] px-4 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40"
+          >
+            Agregar
+          </button>
+        </div>
+      )}
     </div>
   );
 }
