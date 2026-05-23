@@ -1,20 +1,75 @@
 import { useState } from 'react';
 import { Music2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { PoliticaDatos } from './PoliticaDatos';
+
+type ErrorInfo = {
+  message: string;
+  action?: { label: string; onClick: () => void };
+};
+
+function parseAuthError(error: Error, isRegister: boolean, switchToLogin: () => void): ErrorInfo {
+  const msg = error.message;
+
+  if (msg === 'EMAIL_EXISTS') {
+    return {
+      message: 'Este correo ya tiene una cuenta registrada.',
+      action: { label: 'Iniciar sesión', onClick: switchToLogin },
+    };
+  }
+
+  if (msg === 'Invalid login credentials') {
+    return {
+      message: 'Correo o contraseña incorrectos. Si te registraste con Google, usa el botón de Google.',
+    };
+  }
+
+  if (msg === 'Email not confirmed') {
+    return { message: 'Debes confirmar tu correo electrónico. Revisa tu bandeja de entrada.' };
+  }
+
+  if (msg === 'User already registered') {
+    return {
+      message: 'Este correo ya está registrado.',
+      action: { label: 'Iniciar sesión', onClick: switchToLogin },
+    };
+  }
+
+  if (msg.includes('Password should be at least')) {
+    return { message: 'La contraseña debe tener al menos 6 caracteres.' };
+  }
+
+  if (isRegister) {
+    return { message: msg || 'No se pudo crear la cuenta. Intenta de nuevo.' };
+  }
+
+  return { message: msg || 'No se pudo iniciar sesión. Intenta de nuevo.' };
+}
 
 export function LoginPage() {
   const { signInWithEmail, signUp, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegister, setIsRegister] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorInfo, setErrorInfo] = useState<ErrorInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [aceptaPolitica, setAceptaPolitica] = useState(false);
+  const [showPolitica, setShowPolitica] = useState(false);
+
+  const switchToLogin = () => { setIsRegister(false); setErrorInfo(null); setSuccessMsg(null); };
+  const switchToRegister = () => { setIsRegister(true); setErrorInfo(null); setSuccessMsg(null); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setErrorInfo(null);
     setSuccessMsg(null);
+
+    if (isRegister && !aceptaPolitica) {
+      setErrorInfo({ message: 'Debes aceptar la política de tratamiento de datos para registrarte.' });
+      return;
+    }
+
     setLoading(true);
     try {
       if (isRegister) {
@@ -24,11 +79,24 @@ export function LoginPage() {
         await signInWithEmail(email, password);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      const error = err instanceof Error ? err : new Error('Error desconocido');
+      setErrorInfo(parseAuthError(error, isRegister, switchToLogin));
     } finally {
       setLoading(false);
     }
   };
+
+  const handleGoogleSignIn = () => {
+    if (isRegister && !aceptaPolitica) {
+      setErrorInfo({ message: 'Debes aceptar la política de tratamiento de datos para registrarte.' });
+      return;
+    }
+    signInWithGoogle();
+  };
+
+  if (showPolitica) {
+    return <PoliticaDatos onBack={() => setShowPolitica(false)} />;
+  }
 
   return (
     <div className="min-h-svh bg-app flex flex-col items-center justify-center px-4">
@@ -43,9 +111,17 @@ export function LoginPage() {
             {isRegister ? 'Crear cuenta' : 'Iniciar sesión'}
           </h2>
 
-          {error && (
+          {errorInfo && (
             <div className="bg-red-50 text-red-700 text-sm px-4 py-2 rounded-xl mb-4">
-              {error}
+              <p>{errorInfo.message}</p>
+              {errorInfo.action && (
+                <button
+                  onClick={errorInfo.action.onClick}
+                  className="mt-1 text-brand-700 font-medium hover:underline"
+                >
+                  {errorInfo.action.label}
+                </button>
+              )}
             </div>
           )}
 
@@ -73,6 +149,28 @@ export function LoginPage() {
               minLength={6}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-400 text-sm"
             />
+
+            {isRegister && (
+              <label className="flex items-start gap-2 text-xs text-slate-500 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aceptaPolitica}
+                  onChange={e => setAceptaPolitica(e.target.checked)}
+                  className="mt-0.5 accent-brand-700"
+                />
+                <span>
+                  Acepto la{' '}
+                  <button
+                    type="button"
+                    onClick={() => setShowPolitica(true)}
+                    className="text-brand-700 font-medium hover:underline"
+                  >
+                    Política de Tratamiento de Datos Personales
+                  </button>
+                </span>
+              </label>
+            )}
+
             <button
               type="submit"
               disabled={loading}
@@ -92,7 +190,7 @@ export function LoginPage() {
           </div>
 
           <button
-            onClick={signInWithGoogle}
+            onClick={handleGoogleSignIn}
             className="w-full flex items-center justify-center gap-3 border border-gray-200 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-slate-700"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -107,7 +205,7 @@ export function LoginPage() {
           <p className="text-center text-sm text-slate-400 mt-5">
             {isRegister ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}{' '}
             <button
-              onClick={() => { setIsRegister(!isRegister); setError(null); setSuccessMsg(null); }}
+              onClick={() => isRegister ? switchToLogin() : switchToRegister()}
               className="text-brand-700 font-medium hover:underline"
             >
               {isRegister ? 'Inicia sesión' : 'Regístrate'}

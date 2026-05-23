@@ -40,8 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      throw new Error('EMAIL_EXISTS');
+    }
   };
 
   const signInWithGoogle = async () => {
