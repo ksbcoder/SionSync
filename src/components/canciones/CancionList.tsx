@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, X } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
 import { useRoles } from '../../hooks/useRoles';
 import { CancionCard } from './CancionCard';
@@ -12,26 +12,36 @@ import type { Cancion } from '../../domain';
 
 export function CancionList() {
   const navigate = useNavigate();
-  const { getCanciones, buscarCanciones, deleteCancion, loading } = useCanciones();
+  const { getCanciones, deleteCancion, loading } = useCanciones();
   const { canCreateCanciones } = useRoles();
-  const [canciones, setCanciones] = useState<Cancion[]>([]);
+  const [todasCanciones, setTodasCanciones] = useState<Cancion[]>([]);
   const [query, setQuery] = useState('');
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
-  const cargar = useCallback(async () => {
-    const data = query.trim() ? await buscarCanciones(query) : await getCanciones();
-    setCanciones(data ?? []);
-  }, [query, getCanciones, buscarCanciones]);
-
   useEffect(() => {
-    const timer = setTimeout(cargar, query ? 300 : 0);
-    return () => clearTimeout(timer);
-  }, [cargar, query]);
+    window.scrollTo(0, 0);
+  }, []);
+
+  const cargar = useCallback(async () => {
+    const data = await getCanciones();
+    setTodasCanciones(data ?? []);
+  }, [getCanciones]);
+
+  useEffect(() => { cargar(); }, [cargar]);
+
+  const canciones = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return todasCanciones;
+    return todasCanciones.filter(c =>
+      c.titulo.toLowerCase().includes(q) ||
+      c.autor?.toLowerCase().includes(q)
+    );
+  }, [query, todasCanciones]);
 
   const handleDelete = async () => {
     if (!confirmId) return;
     await deleteCancion(confirmId);
-    setCanciones(prev => prev.filter(c => c.id !== confirmId));
+    setTodasCanciones(prev => prev.filter(c => c.id !== confirmId));
   };
 
   return (
@@ -42,11 +52,19 @@ export function CancionList() {
         <div className="relative max-w-2xl mx-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
-            className="w-full h-12 pl-10 pr-4 bg-white border border-gray-200 rounded-2xl text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
+            className="w-full h-12 pl-10 pr-10 bg-white border border-gray-200 rounded-2xl text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
             placeholder="Buscar canciones..."
             value={query}
             onChange={e => setQuery(e.target.value)}
           />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 

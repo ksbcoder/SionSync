@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Music2 } from 'lucide-react';
+import { Music2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { PoliticaDatos } from './PoliticaDatos';
 
@@ -56,6 +56,7 @@ export function LoginPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [aceptaPolitica, setAceptaPolitica] = useState(false);
   const [showPolitica, setShowPolitica] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const switchToLogin = () => { setIsRegister(false); setErrorInfo(null); setSuccessMsg(null); };
   const switchToRegister = () => { setIsRegister(true); setErrorInfo(null); setSuccessMsg(null); };
@@ -140,15 +141,25 @@ export function LoginPage() {
               required
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-400 text-sm"
             />
-            <input
-              type="password"
-              placeholder="Contraseña"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-400 text-sm"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Contraseña"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full px-4 py-3 pr-11 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-400 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
 
             {isRegister && (
               <label className="flex items-start gap-2 text-xs text-slate-500 cursor-pointer">
