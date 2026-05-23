@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { LoginPage } from './LoginPage';
+import { ConsentGate } from './ConsentGate';
 import { DotLoader } from '../ui/DotLoader';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -16,5 +17,5 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (!user) return <LoginPage />;
 
-  return <>{children}</>;
+  return <ConsentGate>{children}</ConsentGate>;
 }
