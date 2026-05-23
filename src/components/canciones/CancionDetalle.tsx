@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MoreVertical, Plus, Presentation, PlusSquare } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Plus, Presentation, PlusSquare, Trash2 } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
 import { useSecciones } from '../../hooks/useSecciones';
 import { useNotas } from '../../hooks/useNotas';
@@ -160,7 +160,11 @@ export function CancionDetalle() {
           <SwipeableCard
             key={seccion.id}
             className="rounded-xl"
-            onDelete={() => setConfirmSeccionId(seccion.id)}
+            actions={[{
+              icon: <Trash2 className="w-5 h-5 text-white" />,
+              bg: 'bg-red-500',
+              onClick: () => setConfirmSeccionId(seccion.id),
+            }]}
           >
             <SeccionItem
               seccion={seccion}
