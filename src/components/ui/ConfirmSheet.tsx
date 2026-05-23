@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useIsDesktop } from '../../hooks/useMediaQuery';
 
 interface ConfirmSheetProps {
@@ -37,18 +38,14 @@ export function ConfirmSheet({ isOpen, onClose, onConfirm, title, description, c
     </div>
   );
 
-  if (isDesktop) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
-          {content}
-        </div>
+  const modal = isDesktop ? (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
+        {content}
       </div>
-    );
-  }
-
-  return (
+    </div>
+  ) : (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div
@@ -59,4 +56,6 @@ export function ConfirmSheet({ isOpen, onClose, onConfirm, title, description, c
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
