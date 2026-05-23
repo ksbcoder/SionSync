@@ -93,6 +93,7 @@ export function CancionDetalle() {
           >
             <SeccionItem
               seccion={seccion}
+              canEdit={canEdit}
               canMoveUp={idx > 0}
               canMoveDown={idx < secciones.length - 1}
               onMoveUp={() => moverSeccion(seccion.id, 'arriba')}

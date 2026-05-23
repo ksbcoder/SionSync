@@ -9,6 +9,7 @@ import type { Seccion, TipoSeccion, Nota } from '../../domain';
 
 interface SeccionItemProps {
   seccion: Seccion;
+  canEdit: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
   onMoveUp: () => void;
@@ -24,7 +25,7 @@ interface SeccionItemProps {
 const iconBtn = 'min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors disabled:opacity-20';
 
 export function SeccionItem({
-  seccion, canMoveUp, canMoveDown,
+  seccion, canEdit, canMoveUp, canMoveDown,
   onMoveUp, onMoveDown, onDelete, onDuplicate, onUpdate,
   onAddNota, onUpdateNota, onDeleteNota,
 }: SeccionItemProps) {
@@ -38,26 +39,28 @@ export function SeccionItem({
         <div className="p-4">
           <div className="flex items-start justify-between mb-3">
             <SeccionBadge tipo={seccion.tipo} />
-            <div className="flex gap-0.5">
-              <button onClick={() => setNotasOpen(true)} className={iconBtn} title="Acordes">
-                <Music className="w-4 h-4" />
-              </button>
-              <button onClick={() => setEditOpen(true)} className={iconBtn} title="Editar">
-                <Pencil className="w-4 h-4" />
-              </button>
-              <button onClick={onMoveUp} disabled={!canMoveUp} className={iconBtn} title="Subir">
-                <ChevronUp className="w-4 h-4" />
-              </button>
-              <button onClick={onMoveDown} disabled={!canMoveDown} className={iconBtn} title="Bajar">
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              <button onClick={onDuplicate} className={iconBtn} title="Duplicar">
-                <Copy className="w-4 h-4" />
-              </button>
-              <button onClick={onDelete} className={`hidden md:flex ${iconBtn} hover:text-red-500`} title="Eliminar">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+            {canEdit && (
+              <div className="flex gap-0.5">
+                <button onClick={() => setNotasOpen(true)} className={iconBtn} title="Acordes">
+                  <Music className="w-4 h-4" />
+                </button>
+                <button onClick={() => setEditOpen(true)} className={iconBtn} title="Editar">
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button onClick={onMoveUp} disabled={!canMoveUp} className={iconBtn} title="Subir">
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+                <button onClick={onMoveDown} disabled={!canMoveDown} className={iconBtn} title="Bajar">
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                <button onClick={onDuplicate} className={iconBtn} title="Duplicar">
+                  <Copy className="w-4 h-4" />
+                </button>
+                <button onClick={onDelete} className={`hidden md:flex ${iconBtn} hover:text-red-500`} title="Eliminar">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
           <NotasDisplay notas={notas} />
           <p className="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap">{seccion.letra}</p>
@@ -75,6 +78,7 @@ export function SeccionItem({
       <BottomSheet isOpen={notasOpen} onClose={() => setNotasOpen(false)} title="Acordes / Notas">
         <NotasForm
           notas={notas}
+          canEdit={canEdit}
           onAdd={onAddNota}
           onUpdate={onUpdateNota}
           onDelete={onDeleteNota}

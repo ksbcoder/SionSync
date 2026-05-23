@@ -7,26 +7,18 @@ import { BottomSheet } from './layout/BottomSheet';
 interface ProfileSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onNameUpdated?: () => void;
 }
 
-export function ProfileSheet({ isOpen, onClose, onNameUpdated }: ProfileSheetProps) {
+export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
   const { user } = useAuth();
-  const [displayName, setDisplayName] = useState('');
+  const displayName = user?.user_metadata?.full_name || '';
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isOpen || !user) return;
-    setEditing(false);
-    setLoading(true);
-    usuarioService.getProfile(user.id).then(profile => {
-      setDisplayName(profile?.display_name ?? '');
-      setLoading(false);
-    });
-  }, [isOpen, user]);
+    if (isOpen) setEditing(false);
+  }, [isOpen]);
 
   const handleEdit = () => {
     setEditValue(displayName);
@@ -41,22 +33,17 @@ export function ProfileSheet({ isOpen, onClose, onNameUpdated }: ProfileSheetPro
     if (!user || !editValue.trim()) return;
     setSaving(true);
     await usuarioService.updateDisplayName(user.id, editValue.trim());
-    setDisplayName(editValue.trim());
     setEditing(false);
     setSaving(false);
-    onNameUpdated?.();
   };
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="Mi perfil">
-      {loading ? (
-        <div className="py-8 text-center text-slate-400 text-sm">Cargando...</div>
-      ) : (
         <div className="flex flex-col gap-4">
           <div>
             <label className="text-xs text-slate-400 uppercase tracking-wide">Nombre</label>
             {editing ? (
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-start gap-2 mt-1">
                 <div className="flex-1">
                   <input
                     type="text"
@@ -107,7 +94,6 @@ export function ProfileSheet({ isOpen, onClose, onNameUpdated }: ProfileSheetPro
             <p className="text-sm text-slate-800 mt-1">{user?.email ?? ''}</p>
           </div>
         </div>
-      )}
     </BottomSheet>
   );
 }

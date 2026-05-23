@@ -3,14 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Music2, Settings, CalendarDays, LogOut, UserCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useRoles } from '../hooks/useRoles';
-import { useProfile } from '../hooks/useProfile';
 import { ProfileSheet } from './ProfileSheet';
 
 export function Home() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useRoles();
-  const { displayName, reload: reloadProfile } = useProfile();
   const [profileOpen, setProfileOpen] = useState(false);
 
   const opciones = [
@@ -63,7 +61,7 @@ export function Home() {
           </div>
         </div>
         <p className="text-slate-500 text-sm pl-10">
-          Hola, {displayName || user?.email?.split('@')[0] || 'usuario'}
+          Hola, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'usuario'}
         </p>
       </header>
 
@@ -90,7 +88,7 @@ export function Home() {
         ))}
       </main>
 
-      <ProfileSheet isOpen={profileOpen} onClose={() => setProfileOpen(false)} onNameUpdated={reloadProfile} />
+      <ProfileSheet isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 }
