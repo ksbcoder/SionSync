@@ -12,7 +12,7 @@ export function CancionPresentacion() {
   const { getCancion } = useCanciones();
   const [cancion, setCancion] = useState<Cancion | null>(null);
   const [autoScroll, setAutoScroll] = useState(false);
-  const [velocidad, setVelocidad] = useState(2);
+  const [velocidad, setVelocidad] = useState(1);
   const scrollRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
   const velocidadRef = useRef(velocidad);
@@ -26,11 +26,11 @@ export function CancionPresentacion() {
     getCancion(id).then(setCancion);
   }, [id, getCancion]);
 
-  // px/segundo = velocidad * 6 → rango: 6px/s (vel 1) a 60px/s (vel 10)
+  // px/segundo = velocidad * 3 → rango: 3px/s (vel 1) a 30px/s (vel 10)
   const scroll = useCallback((timestamp: number) => {
     if (lastTimeRef.current !== null && scrollRef.current) {
       const delta = timestamp - lastTimeRef.current;
-      accumRef.current += (velocidadRef.current * 6 * delta) / 1000;
+      accumRef.current += (velocidadRef.current * 3 * delta) / 1000;
       const px = Math.floor(accumRef.current);
       if (px >= 1) {
         scrollRef.current.scrollTop += px;
