@@ -7,6 +7,7 @@ export interface Cancion {
   tonalidad: string | null;
   tempo: number | null;
   user_id: string;
+  updated_by: string;
   created_at: string;
   updated_at: string;
   secciones?: Seccion[];

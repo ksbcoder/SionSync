@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../infrastructure/supabase';
+import { usuarioRepository } from '../infrastructure/usuario.repository';
 import { useAuth } from './useAuth';
 
 const CURRENT_POLICY_VERSION = '1.0';
@@ -16,27 +16,15 @@ export function useConsent() {
       return;
     }
 
-    supabase
-      .from('profiles')
-      .select('data_consent_at, data_consent_version')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => {
-        setHasConsent(!!data?.data_consent_at && data?.data_consent_version === CURRENT_POLICY_VERSION);
-        setLoading(false);
-      });
+    usuarioRepository.getProfile(user.id).then(profile => {
+      setHasConsent(!!profile.data_consent_at && profile.data_consent_version === CURRENT_POLICY_VERSION);
+      setLoading(false);
+    });
   }, [user]);
 
   const acceptConsent = async () => {
     if (!user) return;
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        data_consent_at: new Date().toISOString(),
-        data_consent_version: CURRENT_POLICY_VERSION,
-      })
-      .eq('id', user.id);
-    if (error) throw error;
+    await usuarioRepository.updateConsent(user.id, CURRENT_POLICY_VERSION);
     setHasConsent(true);
   };
 

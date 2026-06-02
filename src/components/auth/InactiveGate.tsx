@@ -1,6 +1,6 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { Music2, LogOut } from 'lucide-react';
-import { supabase } from '../../infrastructure/supabase';
+import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useAuth } from '../../hooks/useAuth';
 import { DotLoader } from '../ui/DotLoader';
 
@@ -15,15 +15,10 @@ export function InactiveGate({ children }: { children: ReactNode }) {
       return;
     }
 
-    supabase
-      .from('profiles')
-      .select('active')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => {
-        setActive(data?.active ?? true);
-        setLoading(false);
-      });
+    usuarioRepository.getProfile(user.id).then(profile => {
+      setActive(profile.active ?? true);
+      setLoading(false);
+    });
   }, [user]);
 
   if (loading) {

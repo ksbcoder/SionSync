@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Pencil, Check, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { usuarioService } from '../application/usuario.service';
+import { usuarioRepository } from '../infrastructure/usuario.repository';
 import { BottomSheet } from './layout/BottomSheet';
 
 interface ProfileSheetProps {
@@ -32,7 +32,7 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
   const handleSave = async () => {
     if (!user || !editValue.trim()) return;
     setSaving(true);
-    await usuarioService.updateDisplayName(user.id, editValue.trim());
+    await usuarioRepository.updateDisplayName(user.id, editValue.trim());
     setEditing(false);
     setSaving(false);
   };
