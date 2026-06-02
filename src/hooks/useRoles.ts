@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../infrastructure/supabase';
+import { usuarioRepository } from '../infrastructure/usuario.repository';
 import { useAuth } from './useAuth';
-
-type RoleName = 'admin' | 'miembro_alabanza' | 'miembro_iglesia';
+import type { RoleName } from '../domain';
 
 export function useRoles() {
   const { user } = useAuth();
@@ -16,17 +15,10 @@ export function useRoles() {
       return;
     }
 
-    supabase
-      .from('user_roles')
-      .select('roles(name)')
-      .eq('user_id', user.id)
-      .then(({ data }) => {
-        const names = (data ?? [])
-          .map((ur: any) => ur.roles?.name as RoleName)
-          .filter(Boolean);
-        setRoles(names);
-        setLoading(false);
-      });
+    usuarioRepository.getRolesByUser(user.id).then(names => {
+      setRoles(names);
+      setLoading(false);
+    });
   }, [user]);
 
   const isAdmin = roles.includes('admin');

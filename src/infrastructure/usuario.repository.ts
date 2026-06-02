@@ -1,7 +1,39 @@
 import { supabase } from './supabase';
-import type { UsuarioConRol, RoleName } from '../domain';
+import type { Profile, UsuarioConRol, RoleName } from '../domain';
 
 export const usuarioRepository = {
+  async getProfile(userId: string): Promise<Profile> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async getRolesByUser(userId: string): Promise<RoleName[]> {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('roles(name)')
+      .eq('user_id', userId);
+    if (error) throw new Error(error.message);
+    return (data ?? [])
+      .map((ur: any) => ur.roles?.name as RoleName)
+      .filter(Boolean);
+  },
+
+  async updateConsent(userId: string, version: string): Promise<void> {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        data_consent_at: new Date().toISOString(),
+        data_consent_version: version,
+      })
+      .eq('id', userId);
+    if (error) throw new Error(error.message);
+  },
+
   async getAll(): Promise<UsuarioConRol[]> {
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')

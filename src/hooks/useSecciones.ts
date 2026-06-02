@@ -1,36 +1,56 @@
 import { useCallback } from 'react';
 import { useAsync } from './useAsync';
-import { seccionService } from '../application/seccion.service';
+import { seccionRepository } from '../infrastructure/seccion.repository';
+import { notaRepository } from '../infrastructure/nota.repository';
 import type { Seccion, SeccionInsert } from '../domain';
 
 export function useSecciones() {
   const { loading, error, run, runVoid } = useAsync();
 
   const addSeccion = useCallback(
-    (data: SeccionInsert): Promise<Seccion | null> => run(() => seccionService.create(data)),
+    (data: SeccionInsert): Promise<Seccion | null> => run(() => seccionRepository.create(data)),
     [run]
   );
 
   const updateSeccion = useCallback(
     (id: string, data: Partial<Pick<SeccionInsert, 'tipo' | 'letra'>>): Promise<Seccion | null> =>
-      run(() => seccionService.update(id, data)),
+      run(() => seccionRepository.update(id, data)),
     [run]
   );
 
   const deleteSeccion = useCallback(
-    (id: string): Promise<boolean> => runVoid(() => seccionService.delete(id)),
+    (id: string): Promise<boolean> => runVoid(() => seccionRepository.delete(id)),
     [runVoid]
   );
 
   const reordenarSecciones = useCallback(
     (ordenes: { id: string; orden: number }[]): Promise<boolean> =>
-      runVoid(() => seccionService.reordenar(ordenes)),
+      runVoid(() => seccionRepository.updateOrden(ordenes)),
     [runVoid]
   );
 
   const duplicarSeccion = useCallback(
     (seccion: Seccion, ordenSiguiente: number): Promise<Seccion | null> =>
-      run(() => seccionService.duplicar(seccion, ordenSiguiente)),
+      run(async () => {
+        const nueva = await seccionRepository.create({
+          cancion_id: seccion.cancion_id,
+          tipo: seccion.tipo,
+          letra: seccion.letra,
+          orden: ordenSiguiente,
+        });
+
+        if (seccion.notas?.length) {
+          await notaRepository.createMany(
+            seccion.notas.map(n => ({
+              seccion_id: nueva.id,
+              orden: n.orden,
+              contenido: n.contenido,
+            }))
+          );
+        }
+
+        return nueva;
+      }),
     [run]
   );
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MoreVertical, Plus, Presentation, Trash2 } from 'lucide-react';
-import { supabase } from '../../infrastructure/supabase';
+import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useCancionDetalle } from '../../hooks/useCancionDetalle';
 import { useCanEdit } from '../../hooks/useRoles';
 import { SeccionItem } from '../secciones/SeccionItem';
@@ -27,16 +27,27 @@ export function CancionDetalle() {
   const [confirmSeccionId, setConfirmSeccionId] = useState<string | null>(null);
   const [detallesOpen, setDetallesOpen] = useState(false);
   const [creadorNombre, setCreadorNombre] = useState<string | null>(null);
+  const [modificadorNombre, setModificadorNombre] = useState<string | null>(null);
   const canEdit = useCanEdit(cancion?.user_id);
 
   useEffect(() => {
     if (!cancion?.user_id) return;
-    supabase
-      .from('profiles')
-      .select('display_name')
-      .eq('id', cancion.user_id)
-      .single()
-      .then(({ data }) => setCreadorNombre(data?.display_name ?? null));
+
+    const mismoUsuario = cancion.updated_by === cancion.user_id;
+    const fetchCreador = usuarioRepository.getProfile(cancion.user_id)
+      .then(p => p.display_name)
+      .catch(() => null);
+
+    fetchCreador.then(nombre => {
+      setCreadorNombre(nombre);
+      if (mismoUsuario) setModificadorNombre(nombre);
+    });
+
+    if (!mismoUsuario) {
+      usuarioRepository.getProfile(cancion.updated_by)
+        .then(p => setModificadorNombre(p.display_name))
+        .catch(() => setModificadorNombre(null));
+    }
   }, [cancion]);
 
   if (loading) {
@@ -162,6 +173,10 @@ export function CancionDetalle() {
             <p className="text-gray-800 font-medium">
               {cancion?.updated_at ? new Date(cancion.updated_at).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
             </p>
+          </div>
+          <div>
+            <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Modificado por</p>
+            <p className="text-gray-800 font-medium">{modificadorNombre ?? 'Desconocido'}</p>
           </div>
         </div>
       </BottomSheet>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, ShieldCheck, ShieldX, UserCheck, UserX } from 'lucide-react';
-import { usuarioService } from '../../application/usuario.service';
+import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useAuth } from '../../hooks/useAuth';
 import { BottomSheet } from '../layout/BottomSheet';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
@@ -30,7 +30,7 @@ export function UsuarioList() {
 
   const cargar = async () => {
     setLoading(true);
-    const data = await usuarioService.getAll();
+    const data = await usuarioRepository.getAll();
     setUsuarios(data);
     setLoading(false);
   };
@@ -40,7 +40,7 @@ export function UsuarioList() {
   const handleChangeRole = async (newRole: RoleName) => {
     if (!selectedUser) return;
     setSaving(true);
-    await usuarioService.changeRole(selectedUser.id, newRole);
+    await usuarioRepository.changeRole(selectedUser.id, newRole);
     setRoleSheetOpen(false);
     setSelectedUser(null);
     setSaving(false);
@@ -50,7 +50,7 @@ export function UsuarioList() {
   const handleToggleActive = async () => {
     if (!confirmToggle) return;
     setSaving(true);
-    await usuarioService.toggleActive(confirmToggle.id, !confirmToggle.active);
+    await usuarioRepository.toggleActive(confirmToggle.id, !confirmToggle.active);
     setConfirmToggle(null);
     setSaving(false);
     await cargar();
