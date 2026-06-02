@@ -44,17 +44,26 @@ export function SeccionItem({
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <SeccionBadge tipo={seccion.tipo} />
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <SeccionBadge tipo={seccion.tipo} />
+              {notas.length > 0 && (
+                <>
+                  <div className="w-px h-4 bg-gray-200 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <NotasDisplay notas={notas} />
+                  </div>
+                </>
+              )}
+            </div>
             {canEdit && (
               <button
                 onClick={() => setMenuOpen(true)}
-                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors shrink-0"
               >
                 <MoreVertical className="w-5 h-5" />
               </button>
             )}
           </div>
-          <NotasDisplay notas={notas} />
           <p className="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap">{seccion.letra}</p>
         </div>
       </div>

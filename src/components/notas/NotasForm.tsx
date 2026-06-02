@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Pencil, Trash2, Check, X } from 'lucide-react';
 import type { Nota } from '../../domain';
 
 interface NotasFormProps {
@@ -8,6 +9,8 @@ interface NotasFormProps {
   onUpdate: (id: string, contenido: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
+
+const iconBtn = 'min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg transition-colors';
 
 export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFormProps) {
   const [nuevo, setNuevo] = useState('');
@@ -62,11 +65,11 @@ export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFo
                 onKeyDown={e => e.key === 'Enter' && handleUpdate(nota.id)}
                 autoFocus
               />
-              <button onClick={() => handleUpdate(nota.id)} className="min-h-[44px] px-3 text-sm font-medium text-gray-700 hover:text-gray-900">
-                Guardar
+              <button onClick={() => handleUpdate(nota.id)} className={`${iconBtn} text-green-600 hover:bg-green-50`}>
+                <Check className="w-5 h-5" />
               </button>
-              <button onClick={() => setEditando(null)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-600">
-                Cancelar
+              <button onClick={() => setEditando(null)} className={`${iconBtn} text-gray-400 hover:bg-gray-50`}>
+                <X className="w-5 h-5" />
               </button>
             </div>
           ) : confirmando === nota.id ? (
@@ -74,12 +77,12 @@ export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFo
               <span className="flex-1 text-sm text-red-700">¿Eliminar este acorde?</span>
               <button
                 onClick={async () => { await onDelete(nota.id); setConfirmando(null); }}
-                className="min-h-[44px] px-3 text-sm font-medium text-red-600 hover:text-red-800"
+                className={`${iconBtn} text-red-600 hover:bg-red-100`}
               >
-                Sí
+                <Check className="w-5 h-5" />
               </button>
-              <button onClick={() => setConfirmando(null)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-600">
-                No
+              <button onClick={() => setConfirmando(null)} className={`${iconBtn} text-gray-400 hover:bg-gray-100`}>
+                <X className="w-5 h-5" />
               </button>
             </div>
           ) : (
@@ -89,11 +92,11 @@ export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFo
               </span>
               {canEdit && (
                 <>
-                  <button onClick={() => startEdit(nota)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-gray-700">
-                    Editar
+                  <button onClick={() => startEdit(nota)} className={`${iconBtn} text-gray-400 hover:text-brand-700 hover:bg-brand-50`}>
+                    <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => setConfirmando(nota.id)} className="min-h-[44px] px-2 text-sm text-gray-400 hover:text-red-500">
-                    Eliminar
+                  <button onClick={() => setConfirmando(nota.id)} className={`${iconBtn} text-gray-400 hover:text-red-500 hover:bg-red-50`}>
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </>
               )}

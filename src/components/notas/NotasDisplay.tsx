@@ -16,7 +16,7 @@ export function NotasDisplay({ notas, presentacion = false }: NotasDisplayProps)
   if (!notas.length) return null;
 
   return (
-    <div className="flex flex-wrap gap-1.5 mb-3">
+    <div className={`flex gap-1.5 ${presentacion ? 'flex-wrap mb-3' : 'overflow-x-auto'}`}>
       {notas.map(nota => {
         const acordes = parseAcordes(nota.contenido);
         if (acordes.length <= 1) {
