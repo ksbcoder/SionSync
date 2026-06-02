@@ -17,8 +17,9 @@ export function useRoles() {
 
     usuarioRepository.getRolesByUser(user.id).then(names => {
       setRoles(names);
-      setLoading(false);
-    });
+    }).catch(() => {
+      setRoles([]);
+    }).finally(() => setLoading(false));
   }, [user]);
 
   const isAdmin = roles.includes('admin');

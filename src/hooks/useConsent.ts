@@ -18,8 +18,9 @@ export function useConsent() {
 
     usuarioRepository.getProfile(user.id).then(profile => {
       setHasConsent(!!profile.data_consent_at && profile.data_consent_version === CURRENT_POLICY_VERSION);
-      setLoading(false);
-    });
+    }).catch(() => {
+      setHasConsent(false);
+    }).finally(() => setLoading(false));
   }, [user]);
 
   const acceptConsent = async () => {
