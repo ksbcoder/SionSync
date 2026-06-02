@@ -83,11 +83,18 @@ export function CancionDetalle() {
         </button>
       </header>
 
-      {(cancion.autor || cancion.tonalidad || cancion.tempo) && (
-        <div className="px-4 py-3 bg-white border-b border-gray-100 flex gap-2 overflow-x-auto">
-          {cancion.autor && <span className="text-sm text-gray-600 shrink-0">{cancion.autor}</span>}
-          {cancion.tonalidad && <span className="bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full text-xs font-medium shrink-0">{cancion.tonalidad}</span>}
-          {cancion.tempo && <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-medium shrink-0">{cancion.tempo} BPM</span>}
+      {(cancion.tonalidad || cancion.tempo) && (
+        <div className="px-4 py-3 bg-white border-b border-gray-100 flex gap-3 overflow-x-auto">
+          {cancion.tonalidad && (
+            <span className="bg-brand-100 text-brand-900 px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0">
+              Tono: {cancion.tonalidad}
+            </span>
+          )}
+          {cancion.tempo && (
+            <span className="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0">
+              Tempo: {cancion.tempo} BPM
+            </span>
+          )}
         </div>
       )}
 

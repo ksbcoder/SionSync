@@ -94,8 +94,8 @@ export function CancionPresentacion() {
         </div>
       </div>
 
-      {cancion.autor && (
-        <p className="text-gray-400 text-sm text-center pb-2 shrink-0">{cancion.autor}</p>
+      {cancion.tempo && (
+        <p className="text-stage-muted text-sm text-center pb-2 shrink-0">{cancion.tempo} BPM</p>
       )}
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pb-8">
