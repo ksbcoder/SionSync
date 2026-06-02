@@ -17,8 +17,9 @@ export function InactiveGate({ children }: { children: ReactNode }) {
 
     usuarioRepository.getProfile(user.id).then(profile => {
       setActive(profile.active ?? true);
-      setLoading(false);
-    });
+    }).catch(() => {
+      setActive(true);
+    }).finally(() => setLoading(false));
   }, [user]);
 
   if (loading) {

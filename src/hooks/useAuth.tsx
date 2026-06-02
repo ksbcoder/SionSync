@@ -23,23 +23,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    }).catch(() => {
+      setSession(null);
+      setUser(null);
+    }).finally(() => setLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user && (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED')) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('display_name')
-          .eq('id', session.user.id)
-          .single();
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('id', session.user.id)
+            .single();
 
-        if (profile && profile.display_name !== session.user.user_metadata?.full_name) {
-          const { data } = await supabase.auth.updateUser({ data: { full_name: profile.display_name } });
-          if (data.user) setUser(data.user);
+          if (profile && profile.display_name !== session.user.user_metadata?.full_name) {
+            const { data } = await supabase.auth.updateUser({ data: { full_name: profile.display_name } });
+            if (data.user) setUser(data.user);
+          }
+        } catch {
+          // La sincronización de nombre no es crítica
         }
       }
     });
