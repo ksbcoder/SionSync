@@ -8,3 +8,5 @@ export type { Nota, NotaInsert } from './nota';
 
 export type { Profile, UserRole, UsuarioConRol, RoleName } from './usuario';
 export { ROLES_INFO } from './usuario';
+
+export type { TipoProgramacion, Programacion, ProgramacionInsert, ResponsableProgramacion, ResponsableInsert } from './programacion';

@@ -20,10 +20,11 @@ export interface UsuarioConRol extends Profile {
   user_roles: UserRole[];
 }
 
-export type RoleName = 'admin' | 'miembro_alabanza' | 'miembro_iglesia';
+export type RoleName = 'admin' | 'gestor_alabanza' | 'miembro_alabanza' | 'miembro_iglesia';
 
 export const ROLES_INFO: Record<RoleName, { label: string; description: string; color: string }> = {
   admin: { label: 'Administrador', description: 'Acceso total', color: 'bg-red-100 text-red-800' },
+  gestor_alabanza: { label: 'Gestor de Alabanza', description: 'Administra programaciones', color: 'bg-purple-100 text-purple-800' },
   miembro_alabanza: { label: 'Miembro de Alabanza', description: 'Gestiona canciones', color: 'bg-amber-100 text-amber-800' },
   miembro_iglesia: { label: 'Miembro de Iglesia', description: 'Acceso de lectura', color: 'bg-blue-100 text-blue-800' },
 };
