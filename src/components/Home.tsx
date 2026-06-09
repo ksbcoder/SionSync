@@ -28,10 +28,10 @@ export function Home() {
     }] : []),
     {
       label: 'Programación',
-      description: 'Próximamente',
+      description: 'Responsables de aseo y sonido',
       icon: CalendarDays,
       ruta: '/programacion',
-      enabled: false,
+      enabled: true,
     },
   ];
 

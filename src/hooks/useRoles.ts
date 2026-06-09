@@ -23,10 +23,12 @@ export function useRoles() {
   }, [user]);
 
   const isAdmin = roles.includes('admin');
+  const isGestorAlabanza = roles.includes('gestor_alabanza');
   const isMiembroAlabanza = roles.includes('miembro_alabanza');
   const canCreateCanciones = isAdmin || isMiembroAlabanza;
+  const canGestionarProgramacion = isAdmin || isGestorAlabanza;
 
-  return { roles, isAdmin, isMiembroAlabanza, canCreateCanciones, loading };
+  return { roles, isAdmin, isGestorAlabanza, isMiembroAlabanza, canCreateCanciones, canGestionarProgramacion, loading };
 }
 
 export function useCanEdit(ownerUserId: string | undefined) {
