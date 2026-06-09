@@ -72,8 +72,8 @@ export function useResponsables() {
     [run]
   );
 
-  const marcarNotificado = useCallback(
-    (id: string): Promise<boolean> => runVoid(() => responsableRepository.marcarNotificado(id)),
+  const toggleNotificado = useCallback(
+    (id: string, notificado: boolean): Promise<boolean> => runVoid(() => responsableRepository.toggleNotificado(id, notificado)),
     [runVoid]
   );
 
@@ -82,5 +82,5 @@ export function useResponsables() {
     [runVoid]
   );
 
-  return { loading, error, getResponsablesPorFecha, getResponsablesFecha, getResponsablesRango, asignarResponsable, asignarVarios, marcarNotificado, eliminarResponsable };
+  return { loading, error, getResponsablesPorFecha, getResponsablesFecha, getResponsablesRango, asignarResponsable, asignarVarios, toggleNotificado, eliminarResponsable };
 }
