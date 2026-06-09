@@ -12,6 +12,7 @@ const CancionDetalle = lazy(() => import('./components/canciones/CancionDetalle'
 const CancionPresentacion = lazy(() => import('./components/canciones/CancionPresentacion').then(m => ({ default: m.CancionPresentacion })));
 const AdminHome = lazy(() => import('./components/admin/AdminHome').then(m => ({ default: m.AdminHome })));
 const UsuarioList = lazy(() => import('./components/admin/UsuarioList').then(m => ({ default: m.UsuarioList })));
+const TiposProgramacionList = lazy(() => import('./components/admin/TiposProgramacionList').then(m => ({ default: m.TiposProgramacionList })));
 const ProgramacionHome = lazy(() => import('./components/programacion/ProgramacionHome').then(m => ({ default: m.ProgramacionHome })));
 
 function LazyFallback() {
@@ -52,6 +53,7 @@ export function AppRoutes() {
 
         <Route path="/administracion" element={<AdminHome />} />
         <Route path="/administracion/usuarios" element={<UsuarioList />} />
+        <Route path="/administracion/tipos-programacion" element={<TiposProgramacionList />} />
       </Routes>
     </Suspense>
   );
