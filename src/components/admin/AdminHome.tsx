@@ -10,11 +10,11 @@ const OPCIONES = [
     enabled: true,
   },
   {
-    label: 'Programación',
-    description: 'Próximamente',
+    label: 'Tipos de Programación',
+    description: 'Gestiona los tipos (Aseo, Sonido, etc.)',
     icon: CalendarDays,
-    ruta: '/administracion/programacion',
-    enabled: false,
+    ruta: '/administracion/tipos-programacion',
+    enabled: true,
   },
 ];
 

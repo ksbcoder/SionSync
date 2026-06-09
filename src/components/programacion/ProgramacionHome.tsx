@@ -7,6 +7,7 @@ import { DotLoader } from '../ui/DotLoader';
 import { EmptyState } from '../ui/EmptyState';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { AsignarResponsableSheet } from './AsignarResponsableSheet';
+import { CrearProgramacionSheet } from './CrearProgramacionSheet';
 import type { Programacion, ResponsableProgramacion } from '../../domain';
 
 function formatFecha(fecha: string): string {
@@ -27,19 +28,24 @@ function sumarDias(fecha: string, dias: number): string {
 export function ProgramacionHome() {
   const navigate = useNavigate();
   const { canGestionarProgramacion } = useRoles();
-  const { getProgramacionesActivas, loading: loadingProg } = useProgramaciones();
+  const { getProgramaciones, loading: loadingProg } = useProgramaciones();
   const { getResponsablesFecha, eliminarResponsable, marcarNotificado, loading: loadingResp } = useResponsables();
 
   const [fecha, setFecha] = useState(hoy);
   const [programaciones, setProgramaciones] = useState<Programacion[]>([]);
   const [responsables, setResponsables] = useState<ResponsableProgramacion[]>([]);
   const [asignarPara, setAsignarPara] = useState<Programacion | null>(null);
+  const [crearOpen, setCrearOpen] = useState(false);
   const [confirmEliminar, setConfirmEliminar] = useState<string | null>(null);
 
+  const [todasProgramaciones, setTodasProgramaciones] = useState<Programacion[]>([]);
+
   const cargarProgramaciones = useCallback(async () => {
-    const data = await getProgramacionesActivas();
-    setProgramaciones(data ?? []);
-  }, [getProgramacionesActivas]);
+    const data = await getProgramaciones();
+    const todas = data ?? [];
+    setTodasProgramaciones(todas);
+    setProgramaciones(todas.filter(p => p.activo));
+  }, [getProgramaciones]);
 
   const cargarResponsables = useCallback(async () => {
     const data = await getResponsablesFecha(fecha);
@@ -72,7 +78,16 @@ export function ProgramacionHome() {
         <button onClick={() => navigate('/')} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-xl">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-lg font-semibold text-gray-800">Programación</h1>
+        <h1 className="flex-1 text-lg font-semibold text-gray-800">Programación</h1>
+        {canGestionarProgramacion && (
+          <button
+            onClick={() => setCrearOpen(true)}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-brand-600 hover:bg-brand-50 rounded-xl transition-colors"
+            title="Nueva programación"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        )}
       </header>
 
       <div className="sticky top-[57px] bg-gray-50 px-4 pt-3 pb-2 z-10">
@@ -194,6 +209,13 @@ export function ProgramacionHome() {
         fecha={fecha}
         responsablesExistentes={asignarPara ? responsablesPorProg(asignarPara.id) : []}
         onAsignado={cargarResponsables}
+      />
+
+      <CrearProgramacionSheet
+        isOpen={crearOpen}
+        onClose={() => setCrearOpen(false)}
+        programacionesExistentes={todasProgramaciones}
+        onCreada={cargarProgramaciones}
       />
 
       <ConfirmSheet

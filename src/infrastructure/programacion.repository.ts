@@ -7,6 +7,25 @@ async function getUserId(): Promise<string> {
   return user.id;
 }
 
+async function enriquecerConPerfiles(responsables: any[]): Promise<ResponsableProgramacion[]> {
+  if (responsables.length === 0) return [];
+
+  const userIds = [...new Set(responsables.flatMap(r => [r.user_id, r.asignado_por]))];
+  const { data: profiles, error } = await supabase
+    .from('profiles')
+    .select('id, display_name')
+    .in('id', userIds);
+  if (error) throw new Error(error.message);
+
+  const profileMap = new Map((profiles ?? []).map(p => [p.id, p]));
+
+  return responsables.map(r => ({
+    ...r,
+    profiles: profileMap.get(r.user_id) ?? null,
+    asignante: profileMap.get(r.asignado_por) ?? null,
+  }));
+}
+
 export const programacionRepository = {
   async getTipos(): Promise<TipoProgramacion[]> {
     const { data, error } = await supabase
@@ -15,6 +34,32 @@ export const programacionRepository = {
       .order('nombre');
     if (error) throw new Error(error.message);
     return data ?? [];
+  },
+
+  async createTipo(nombre: string): Promise<TipoProgramacion> {
+    const { data, error } = await supabase
+      .from('tipos_programacion')
+      .insert({ nombre })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async updateTipo(id: string, nombre: string): Promise<void> {
+    const { error } = await supabase
+      .from('tipos_programacion')
+      .update({ nombre })
+      .eq('id', id);
+    if (error) throw new Error(error.message);
+  },
+
+  async deleteTipo(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('tipos_programacion')
+      .delete()
+      .eq('id', id);
+    if (error) throw new Error(error.message);
   },
 
   async getAll(): Promise<Programacion[]> {
@@ -68,53 +113,54 @@ export const responsableRepository = {
   async getByProgramacionYFecha(programacionId: string, fecha: string): Promise<ResponsableProgramacion[]> {
     const { data, error } = await supabase
       .from('responsables_programacion')
-      .select('*, profiles:user_id(id, display_name), asignante:asignado_por(id, display_name)')
+      .select('*')
       .eq('programacion_id', programacionId)
       .eq('fecha', fecha)
       .order('created_at');
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return enriquecerConPerfiles(data ?? []);
   },
 
   async getByFecha(fecha: string): Promise<ResponsableProgramacion[]> {
     const { data, error } = await supabase
       .from('responsables_programacion')
-      .select('*, profiles:user_id(id, display_name), asignante:asignado_por(id, display_name)')
+      .select('*')
       .eq('fecha', fecha)
       .order('created_at');
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return enriquecerConPerfiles(data ?? []);
   },
 
   async getByRango(desde: string, hasta: string): Promise<ResponsableProgramacion[]> {
     const { data, error } = await supabase
       .from('responsables_programacion')
-      .select('*, profiles:user_id(id, display_name), asignante:asignado_por(id, display_name)')
+      .select('*')
       .gte('fecha', desde)
       .lte('fecha', hasta)
       .order('fecha')
       .order('created_at');
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return enriquecerConPerfiles(data ?? []);
   },
 
   async asignar(data: ResponsableInsert): Promise<ResponsableProgramacion> {
     const { data: created, error } = await supabase
       .from('responsables_programacion')
       .insert(data)
-      .select('*, profiles:user_id(id, display_name), asignante:asignado_por(id, display_name)')
+      .select('*')
       .single();
     if (error) throw new Error(error.message);
-    return created;
+    const [enriched] = await enriquecerConPerfiles([created]);
+    return enriched;
   },
 
   async asignarVarios(data: ResponsableInsert[]): Promise<ResponsableProgramacion[]> {
     const { data: created, error } = await supabase
       .from('responsables_programacion')
       .insert(data)
-      .select('*, profiles:user_id(id, display_name), asignante:asignado_por(id, display_name)');
+      .select('*');
     if (error) throw new Error(error.message);
-    return created ?? [];
+    return enriquecerConPerfiles(created ?? []);
   },
 
   async marcarNotificado(id: string): Promise<void> {
