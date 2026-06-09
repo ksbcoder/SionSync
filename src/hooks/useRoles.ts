@@ -25,10 +25,24 @@ export function useRoles() {
   const isAdmin = roles.includes('admin');
   const isGestorAlabanza = roles.includes('gestor_alabanza');
   const isMiembroAlabanza = roles.includes('miembro_alabanza');
+  const isMiembroNuevo = !loading && !isAdmin && !isGestorAlabanza && !isMiembroAlabanza;
   const canCreateCanciones = isAdmin || isMiembroAlabanza;
   const canGestionarProgramacion = isAdmin || isGestorAlabanza;
+  const canGestionarTiposProgramacion = isAdmin;
+  const canGestionarNotificaciones = isAdmin;
 
-  return { roles, isAdmin, isGestorAlabanza, isMiembroAlabanza, canCreateCanciones, canGestionarProgramacion, loading };
+  return {
+    roles,
+    isAdmin,
+    isGestorAlabanza,
+    isMiembroAlabanza,
+    isMiembroNuevo,
+    canCreateCanciones,
+    canGestionarProgramacion,
+    canGestionarTiposProgramacion,
+    canGestionarNotificaciones,
+    loading,
+  };
 }
 
 export function useCanEdit(ownerUserId: string | undefined) {

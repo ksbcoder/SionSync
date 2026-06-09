@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Trash2, Bell, BellOff, MoreVertical, UserPlus, Power, Info } from 'lucide-react';
 import { useRoles } from '../../hooks/useRoles';
+import { useAuth } from '../../hooks/useAuth';
 import { useProgramaciones, useResponsables } from '../../hooks/useProgramaciones';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { DotLoader } from '../ui/DotLoader';
@@ -30,13 +31,17 @@ function sumarDias(fecha: string, dias: number): string {
 
 export function ProgramacionHome() {
   const navigate = useNavigate();
-  const { canGestionarProgramacion } = useRoles();
+  const { user } = useAuth();
+  const { isAdmin, canGestionarProgramacion, canGestionarNotificaciones } = useRoles();
   const { getProgramaciones, deleteProgramacion, toggleActivo, loading: loadingProg } = useProgramaciones();
   const { getResponsablesFecha, eliminarResponsable, toggleNotificado, loading: loadingResp } = useResponsables();
 
   const [fecha, setFecha] = useState(hoy);
+  const [verInactivas, setVerInactivas] = useState(false);
   const [todasProgramaciones, setTodasProgramaciones] = useState<Programacion[]>([]);
   const [responsables, setResponsables] = useState<ResponsableProgramacion[]>([]);
+
+  const puedeEditarProg = (prog: Programacion) => isAdmin || (canGestionarProgramacion && prog.user_id === user?.id);
 
   const [crearOpen, setCrearOpen] = useState(false);
   const [asignarPara, setAsignarPara] = useState<Programacion | null>(null);
@@ -63,11 +68,12 @@ export function ProgramacionHome() {
   useEffect(() => { cargarProgramaciones(); }, [cargarProgramaciones]);
   useEffect(() => { cargarResponsables(); }, [cargarResponsables]);
 
-  const activas = todasProgramaciones.filter(p => p.activo);
+  const mostrandoInactivas = canGestionarProgramacion && verInactivas;
+  const filtradas = todasProgramaciones.filter(p => p.activo === !mostrandoInactivas);
   const progsConResponsables = new Set(responsables.map(r => r.programacion_id));
   const programacionesVisibles = canGestionarProgramacion
-    ? activas
-    : activas.filter(p => progsConResponsables.has(p.id));
+    ? filtradas
+    : filtradas.filter(p => progsConResponsables.has(p.id));
 
   const handleEliminarResp = async () => {
     if (!confirmEliminarResp) return;
@@ -126,7 +132,23 @@ export function ProgramacionHome() {
         <button onClick={() => navigate('/')} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-xl">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-lg font-semibold text-gray-800">Programación</h1>
+        <h1 className="flex-1 text-lg font-semibold text-gray-800">Programación</h1>
+        {canGestionarProgramacion && (
+          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 text-xs font-medium">
+            <button
+              onClick={() => setVerInactivas(false)}
+              className={`px-3 py-1.5 rounded-md transition-colors ${!verInactivas ? 'bg-white text-brand-700 shadow-sm' : 'text-gray-500'}`}
+            >
+              Activas
+            </button>
+            <button
+              onClick={() => setVerInactivas(true)}
+              className={`px-3 py-1.5 rounded-md transition-colors ${verInactivas ? 'bg-white text-brand-700 shadow-sm' : 'text-gray-500'}`}
+            >
+              Inactivas
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="sticky top-[57px] bg-gray-50 px-4 pt-3 pb-2 z-10">
@@ -162,13 +184,22 @@ export function ProgramacionHome() {
           <DotLoader text="Cargando programación..." />
         ) : programacionesVisibles.length === 0 ? (
           <EmptyState
-            title={canGestionarProgramacion ? 'No hay programaciones activas' : 'Sin programación para esta fecha'}
-            description={canGestionarProgramacion ? 'Crea una programación para empezar a asignar responsables' : 'No hay responsables asignados para este día'}
+            title={
+              !canGestionarProgramacion ? 'Sin programación para esta fecha'
+              : mostrandoInactivas ? 'No hay programaciones inactivas'
+              : 'No hay programaciones activas'
+            }
+            description={
+              !canGestionarProgramacion ? 'No hay responsables asignados para este día'
+              : mostrandoInactivas ? 'Las programaciones que desactives aparecerán aquí'
+              : 'Crea una programación para empezar a asignar responsables'
+            }
           />
         ) : (
           programacionesVisibles.map(prog => {
             const resps = responsablesPorProg(prog.id);
-            const swipeActions = canGestionarProgramacion ? [{
+            const puedeEditar = puedeEditarProg(prog);
+            const swipeActions = puedeEditar ? [{
               icon: <Trash2 className="w-5 h-5 text-white" />,
               bg: 'bg-red-500',
               onClick: () => setConfirmEliminarProg(prog),
@@ -184,7 +215,7 @@ export function ProgramacionHome() {
                         {prog.tipos_programacion?.nombre ?? 'Programación'}
                       </h2>
                     </div>
-                    {canGestionarProgramacion && (
+                    {puedeEditar && (
                       <button
                         onClick={() => setMenuProg(prog)}
                         className="min-h-[36px] min-w-[36px] flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
@@ -210,31 +241,31 @@ export function ProgramacionHome() {
                               </p>
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
-                              {canGestionarProgramacion ? (
-                                <>
-                                  <button
-                                    onClick={() => setConfirmNotificado(resp)}
-                                    className={`min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg transition-colors ${
-                                      resp.notificado
-                                        ? 'text-green-600 bg-green-50'
-                                        : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'
-                                    }`}
-                                    title={resp.notificado ? 'Notificado' : 'Marcar como notificado'}
-                                  >
-                                    {resp.notificado ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
-                                  </button>
-                                  <button
-                                    onClick={() => setConfirmEliminarResp(resp.id)}
-                                    className="min-h-[36px] min-w-[36px] flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Quitar responsable"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </>
+                              {canGestionarNotificaciones ? (
+                                <button
+                                  onClick={() => setConfirmNotificado(resp)}
+                                  className={`min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg transition-colors ${
+                                    resp.notificado
+                                      ? 'text-green-600 bg-green-50'
+                                      : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'
+                                  }`}
+                                  title={resp.notificado ? 'Notificado' : 'Marcar como notificado'}
+                                >
+                                  {resp.notificado ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+                                </button>
                               ) : (
                                 resp.notificado && (
                                   <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Notificado</span>
                                 )
+                              )}
+                              {puedeEditar && (
+                                <button
+                                  onClick={() => setConfirmEliminarResp(resp.id)}
+                                  className="min-h-[36px] min-w-[36px] flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  title="Quitar responsable"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
                               )}
                             </div>
                           </div>
@@ -249,7 +280,7 @@ export function ProgramacionHome() {
         )}
       </main>
 
-      {canGestionarProgramacion && (
+      {canGestionarProgramacion && !mostrandoInactivas && (
         <button
           onClick={() => setCrearOpen(true)}
           className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
@@ -267,24 +298,30 @@ export function ProgramacionHome() {
         title={menuProg?.tipos_programacion?.nombre ?? 'Programación'}
       >
         <div className="flex flex-col gap-2">
-          <button
-            onClick={() => { setAsignarPara(menuProg); setMenuProg(null); }}
-            className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
-          >
-            <UserPlus className="w-5 h-5 text-brand-600" />
-            <div>
-              <p className="font-medium text-gray-800">Asignar responsable</p>
-              <p className="text-xs text-gray-400 mt-0.5">Agregar personas para el {formatFecha(fecha)}</p>
-            </div>
-          </button>
+          {menuProg?.activo && (
+            <button
+              onClick={() => { setAsignarPara(menuProg); setMenuProg(null); }}
+              className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
+            >
+              <UserPlus className="w-5 h-5 text-brand-600" />
+              <div>
+                <p className="font-medium text-gray-800">Asignar responsable</p>
+                <p className="text-xs text-gray-400 mt-0.5">Agregar personas para el {formatFecha(fecha)}</p>
+              </div>
+            </button>
+          )}
           <button
             onClick={() => { if (menuProg) handleToggleActivo(menuProg); }}
             className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
           >
-            <Power className="w-5 h-5 text-amber-600" />
+            <Power className={`w-5 h-5 ${menuProg?.activo ? 'text-amber-600' : 'text-green-600'}`} />
             <div>
-              <p className="font-medium text-gray-800">Desactivar programación</p>
-              <p className="text-xs text-gray-400 mt-0.5">No se mostrará en la vista principal</p>
+              <p className="font-medium text-gray-800">
+                {menuProg?.activo ? 'Desactivar programación' : 'Reactivar programación'}
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {menuProg?.activo ? 'No se mostrará en la vista principal' : 'Volverá a aparecer en la vista de activas'}
+              </p>
             </div>
           </button>
           <button

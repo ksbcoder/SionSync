@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { LoginPage } from './LoginPage';
 import { ConsentGate } from './ConsentGate';
 import { InactiveGate } from './InactiveGate';
+import { MiembroNuevoGate } from './MiembroNuevoGate';
 import { DotLoader } from '../ui/DotLoader';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -20,7 +21,9 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   return (
     <InactiveGate>
-      <ConsentGate>{children}</ConsentGate>
+      <ConsentGate>
+        <MiembroNuevoGate>{children}</MiembroNuevoGate>
+      </ConsentGate>
     </InactiveGate>
   );
 }

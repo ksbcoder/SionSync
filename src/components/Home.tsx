@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music2, Settings, CalendarDays, LogOut, UserCircle } from 'lucide-react';
+import { Music2, Settings, CalendarDays, LogOut, UserCircle, Clock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useRoles } from '../hooks/useRoles';
 import { ProfileSheet } from './ProfileSheet';
@@ -8,7 +8,7 @@ import { ProfileSheet } from './ProfileSheet';
 export function Home() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { isAdmin } = useRoles();
+  const { isAdmin, isMiembroNuevo } = useRoles();
   const [profileOpen, setProfileOpen] = useState(false);
 
   const opciones = [
@@ -66,7 +66,18 @@ export function Home() {
       </header>
 
       <main className="flex-1 px-4 flex flex-col gap-3 max-w-lg mx-auto w-full">
-        {opciones.map(({ label, description, icon: Icon, ruta, enabled }) => (
+        {isMiembroNuevo ? (
+          <div className="bg-white rounded-2xl border border-amber-200 p-6 flex flex-col items-center text-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+              <Clock className="w-7 h-7 text-amber-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-slate-800">Cuenta pendiente de activación</h2>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Tu cuenta fue creada correctamente, pero aún no tiene un rol asignado.
+              Pídele a un administrador que te promueva para acceder a los módulos de la aplicación.
+            </p>
+          </div>
+        ) : opciones.map(({ label, description, icon: Icon, ruta, enabled }) => (
           <button
             key={ruta}
             onClick={() => enabled && navigate(ruta)}
