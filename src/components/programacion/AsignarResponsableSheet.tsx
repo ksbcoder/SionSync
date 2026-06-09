@@ -10,27 +10,30 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   programacion: Programacion | null;
-  fecha: string;
+  fechaInicial: string;
   responsablesExistentes: ResponsableProgramacion[];
   onAsignado: () => void;
 }
 
-export function AsignarResponsableSheet({ isOpen, onClose, programacion, fecha, responsablesExistentes, onAsignado }: Props) {
+export function AsignarResponsableSheet({ isOpen, onClose, programacion, fechaInicial, responsablesExistentes, onAsignado }: Props) {
   const { asignarVarios, loading: saving } = useResponsables();
   const [usuarios, setUsuarios] = useState<UsuarioConRol[]>([]);
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
+  const [fecha, setFecha] = useState(fechaInicial);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
     setSeleccionados(new Set());
+    setFecha(fechaInicial);
     setLoading(true);
     usuarioRepository.getAll().then(data => {
       setUsuarios(data.filter(u => u.active));
     }).finally(() => setLoading(false));
-  }, [isOpen]);
+  }, [isOpen, fechaInicial]);
 
-  const idsYaAsignados = new Set(responsablesExistentes.map(r => r.user_id));
+  const fechaCambiada = fecha !== fechaInicial;
+  const idsYaAsignados = fechaCambiada ? new Set<string>() : new Set(responsablesExistentes.map(r => r.user_id));
 
   const toggleUsuario = (id: string) => {
     setSeleccionados(prev => {
@@ -62,9 +65,15 @@ export function AsignarResponsableSheet({ isOpen, onClose, programacion, fecha, 
       title={`Asignar a ${programacion?.tipos_programacion?.nombre ?? 'Programación'}`}
     >
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-gray-500">
-          Fecha: <span className="font-medium text-gray-700">{fecha}</span>
-        </p>
+        <div>
+          <label className="text-sm text-gray-500 block mb-1">Fecha de responsabilidad</label>
+          <input
+            type="date"
+            value={fecha}
+            onChange={e => setFecha(e.target.value)}
+            className="w-full h-10 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-300"
+          />
+        </div>
 
         {loading ? (
           <DotLoader text="Cargando usuarios..." />
@@ -94,7 +103,7 @@ export function AsignarResponsableSheet({ isOpen, onClose, programacion, fecha, 
 
         <button
           onClick={handleGuardar}
-          disabled={saving || seleccionados.size === 0}
+          disabled={saving || seleccionados.size === 0 || !fecha}
           className="w-full min-h-[44px] rounded-lg bg-brand-500 text-white font-medium text-sm hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? 'Guardando...' : `Asignar (${seleccionados.size})`}

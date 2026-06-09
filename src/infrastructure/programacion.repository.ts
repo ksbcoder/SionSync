@@ -163,10 +163,10 @@ export const responsableRepository = {
     return enriquecerConPerfiles(created ?? []);
   },
 
-  async marcarNotificado(id: string): Promise<void> {
+  async toggleNotificado(id: string, notificado: boolean): Promise<void> {
     const { error } = await supabase
       .from('responsables_programacion')
-      .update({ notificado: true })
+      .update({ notificado })
       .eq('id', id);
     if (error) throw new Error(error.message);
   },
