@@ -19,13 +19,13 @@ export function Home() {
       ruta: '/canciones',
       enabled: true,
     },
-    {
+    ...(isAdmin ? [{
       label: 'Administración',
       description: 'Usuarios, roles y configuración',
       icon: Settings,
       ruta: '/administracion',
-      enabled: isAdmin,
-    },
+      enabled: true,
+    }] : []),
     {
       label: 'Programación',
       description: 'Próximamente',
