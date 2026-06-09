@@ -35,7 +35,6 @@ export function ProgramacionHome() {
   const { getResponsablesFecha, eliminarResponsable, toggleNotificado, loading: loadingResp } = useResponsables();
 
   const [fecha, setFecha] = useState(hoy);
-  const [programaciones, setProgramaciones] = useState<Programacion[]>([]);
   const [todasProgramaciones, setTodasProgramaciones] = useState<Programacion[]>([]);
   const [responsables, setResponsables] = useState<ResponsableProgramacion[]>([]);
 
