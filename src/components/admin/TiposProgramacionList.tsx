@@ -4,10 +4,12 @@ import { ArrowLeft, Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { programacionRepository } from '../../infrastructure/programacion.repository';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { DotLoader } from '../ui/DotLoader';
+import { useToast } from '../../hooks/useToast';
 import type { TipoProgramacion } from '../../domain';
 
 export function TiposProgramacionList() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [tipos, setTipos] = useState<TipoProgramacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -38,6 +40,9 @@ export function TiposProgramacionList() {
       setNuevoNombre('');
       setCreando(false);
       await cargar();
+      showToast('Tipo creado', 'success');
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Error al crear el tipo', 'error');
     } finally {
       setSaving(false);
     }
@@ -52,6 +57,9 @@ export function TiposProgramacionList() {
       setEditandoId(null);
       setEditandoNombre('');
       await cargar();
+      showToast('Tipo actualizado', 'success');
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Error al actualizar el tipo', 'error');
     } finally {
       setSaving(false);
     }
@@ -63,6 +71,9 @@ export function TiposProgramacionList() {
     try {
       await programacionRepository.deleteTipo(confirmEliminar.id);
       await cargar();
+      showToast('Tipo eliminado', 'success');
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Error al eliminar el tipo', 'error');
     } finally {
       setSaving(false);
     }

@@ -59,7 +59,12 @@ export const programacionRepository = {
       .from('tipos_programacion')
       .delete()
       .eq('id', id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === '23503') {
+        throw new Error('No se puede eliminar: hay programaciones que usan este tipo.');
+      }
+      throw new Error(error.message);
+    }
   },
 
   async getAll(): Promise<Programacion[]> {

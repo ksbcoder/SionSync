@@ -16,7 +16,7 @@ function getRolActual(usuario: UsuarioConRol): RoleName {
   if (roles.includes('admin')) return 'admin';
   if (roles.includes('gestor_alabanza')) return 'gestor_alabanza';
   if (roles.includes('miembro_alabanza')) return 'miembro_alabanza';
-  return 'miembro_iglesia';
+  return 'miembro_nuevo';
 }
 
 export function UsuarioList() {
