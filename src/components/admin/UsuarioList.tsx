@@ -14,6 +14,7 @@ function getRolActual(usuario: UsuarioConRol): RoleName {
     ?.map(ur => ur.roles?.name)
     .filter(Boolean) as RoleName[] ?? [];
   if (roles.includes('admin')) return 'admin';
+  if (roles.includes('gestor_alabanza')) return 'gestor_alabanza';
   if (roles.includes('miembro_alabanza')) return 'miembro_alabanza';
   return 'miembro_iglesia';
 }
