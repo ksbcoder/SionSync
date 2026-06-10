@@ -11,11 +11,17 @@ export default {
         brand: {
           900: '#312e81', // texto principal
           700: '#4338ca', // botones CTA
+          600: '#4f46e5', // CTA medio
           500: '#6366f1', // FAB, íconos activos
+          400: '#818cf8', // acentos suaves
           300: '#a5b4fc', // bordes activos
           200: '#c7d2fe', // fondos seleccionados
           100: '#e0e7ff', // fondos suaves, botón secundario
         },
+        // Semánticos
+        success: '#059669',
+        warning: '#f59e0b',
+        danger:  '#dc2626',
         // Fondo general
         app: '#f8faff',
         // Acordes — Emerald
