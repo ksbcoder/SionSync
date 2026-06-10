@@ -335,17 +335,25 @@ export function ProgramacionHome() {
                                   onClick={() => setConfirmNotificado(resp)}
                                   className={`min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg transition-colors ${
                                     resp.notificado
-                                      ? 'text-green-600 bg-green-50'
-                                      : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'
+                                      ? 'text-success bg-chord-bg/40'
+                                      : 'text-warning bg-amber-50'
                                   }`}
                                   title={resp.notificado ? 'Notificado' : 'Marcar como notificado'}
                                 >
                                   {resp.notificado ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
                                 </button>
                               ) : (
-                                resp.notificado && (
-                                  <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Notificado</span>
-                                )
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                                    resp.notificado
+                                      ? 'text-success bg-chord-bg/40'
+                                      : 'text-warning bg-amber-50'
+                                  }`}
+                                  title={resp.notificado ? 'Notificado' : 'Pendiente de notificar'}
+                                >
+                                  {resp.notificado ? <Bell className="w-3 h-3" /> : <BellOff className="w-3 h-3" />}
+                                  {resp.notificado ? 'Notificado' : 'Pendiente'}
+                                </span>
                               )}
                               {puedeEditar && (
                                 <button

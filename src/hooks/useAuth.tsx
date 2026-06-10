@@ -29,10 +29,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }).finally(() => setLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const nextUser = session?.user ?? null;
       setSession(session);
-      setUser(session?.user ?? null);
+      // Mantener la misma referencia si el usuario no cambió, para no disparar
+      // re-renders en useEffect que dependen de `user` (p.ej. useRoles).
+      setUser(prev => (prev?.id === nextUser?.id ? prev : nextUser));
 
-      if (session?.user && (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED')) {
+      // La sincronización de nombre solo tiene sentido al iniciar sesión.
+      // Hacerlo en TOKEN_REFRESHED dispara setUser de nuevo y rerenders extra.
+      if (session?.user && _event === 'SIGNED_IN') {
         try {
           const { data: profile } = await supabase
             .from('profiles')
