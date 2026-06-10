@@ -154,7 +154,10 @@ export const responsableRepository = {
       .insert(data)
       .select('*')
       .single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === '23505') throw new Error('Ese responsable ya está asignado para esta fecha.');
+      throw new Error(error.message);
+    }
     const [enriched] = await enriquecerConPerfiles([created]);
     return enriched;
   },
@@ -164,7 +167,10 @@ export const responsableRepository = {
       .from('responsables_programacion')
       .insert(data)
       .select('*');
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === '23505') throw new Error('Uno o más responsables ya están asignados para esta fecha.');
+      throw new Error(error.message);
+    }
     return enriquecerConPerfiles(created ?? []);
   },
 

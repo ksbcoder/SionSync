@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
+import { useToast } from '../../hooks/useToast';
 import { TouchButton } from '../ui/TouchButton';
 import { TONALIDADES } from '../../domain';
 import type { Cancion } from '../../domain';
@@ -14,6 +15,7 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
   const navigate = useNavigate();
   const { id } = useParams();
   const { createCancion, updateCancion, loading } = useCanciones();
+  const { showToast } = useToast();
 
   const [titulo, setTitulo] = useState(cancionExistente?.titulo ?? '');
   const [autor, setAutor] = useState(cancionExistente?.autor ?? '');
@@ -30,10 +32,16 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
     };
     if (id && cancionExistente) {
       const updated = await updateCancion(id, data);
-      if (updated) navigate(`/cancion/${id}`);
+      if (updated) {
+        showToast('Canción actualizada', 'success');
+        navigate(`/cancion/${id}`);
+      }
     } else {
       const created = await createCancion(data);
-      if (created) navigate(`/cancion/${created.id}`);
+      if (created) {
+        showToast('Canción creada', 'success');
+        navigate(`/cancion/${created.id}`);
+      }
     }
   };
 
