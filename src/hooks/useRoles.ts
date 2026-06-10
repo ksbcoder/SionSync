@@ -15,18 +15,24 @@ export function useRoles() {
       return;
     }
 
+    let cancelado = false;
     usuarioRepository.getRolesByUser(user.id).then(names => {
-      setRoles(names);
+      if (!cancelado) setRoles(names);
     }).catch(() => {
-      setRoles([]);
-    }).finally(() => setLoading(false));
+      // No vaciar los roles previos: una falla de red transitoria
+      // dejaría al usuario sin permisos hasta recargar.
+    }).finally(() => {
+      if (!cancelado) setLoading(false);
+    });
+
+    return () => { cancelado = true; };
   }, [user]);
 
   const isAdmin = roles.includes('admin');
   const isGestorAlabanza = roles.includes('gestor_alabanza');
   const isMiembroAlabanza = roles.includes('miembro_alabanza');
   const isMiembroNuevo = !loading && !isAdmin && !isGestorAlabanza && !isMiembroAlabanza;
-  const canCreateCanciones = isAdmin || isMiembroAlabanza;
+  const canCreateCanciones = isAdmin || isMiembroAlabanza || isGestorAlabanza;
   const canGestionarProgramacion = isAdmin || isGestorAlabanza;
   const canGestionarTiposProgramacion = isAdmin;
   const canGestionarNotificaciones = isAdmin;
@@ -47,8 +53,8 @@ export function useRoles() {
 
 export function useCanEdit(ownerUserId: string | undefined) {
   const { user } = useAuth();
-  const { isAdmin } = useRoles();
+  const { isAdmin, isGestorAlabanza } = useRoles();
 
   if (!user || !ownerUserId) return false;
-  return user.id === ownerUserId || isAdmin;
+  return user.id === ownerUserId || isAdmin || isGestorAlabanza;
 }
