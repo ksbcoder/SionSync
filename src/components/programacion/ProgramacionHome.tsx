@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Trash2, Bell, BellOff, MoreVertical, UserPlus, Power, Info } from 'lucide-react';
 import { useRoles } from '../../hooks/useRoles';
 import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../hooks/useToast';
 import { useProgramaciones, useResponsables } from '../../hooks/useProgramaciones';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { DotLoader } from '../ui/DotLoader';
@@ -19,19 +20,27 @@ function formatFecha(fecha: string): string {
   return d.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
+function toISODate(d: Date): string {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function hoy(): string {
-  return new Date().toISOString().split('T')[0];
+  return toISODate(new Date());
 }
 
 function sumarDias(fecha: string, dias: number): string {
   const d = new Date(fecha + 'T12:00:00');
   d.setDate(d.getDate() + dias);
-  return d.toISOString().split('T')[0];
+  return toISODate(d);
 }
 
 export function ProgramacionHome() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const { isAdmin, canGestionarProgramacion, canGestionarNotificaciones } = useRoles();
   const { getProgramaciones, deleteProgramacion, toggleActivo, loading: loadingProg } = useProgramaciones();
   const { getResponsablesFecha, eliminarResponsable, toggleNotificado, loading: loadingResp } = useResponsables();
@@ -77,27 +86,40 @@ export function ProgramacionHome() {
 
   const handleEliminarResp = async () => {
     if (!confirmEliminarResp) return;
-    await eliminarResponsable(confirmEliminarResp);
-    setResponsables(prev => prev.filter(r => r.id !== confirmEliminarResp));
+    const ok = await eliminarResponsable(confirmEliminarResp);
+    if (ok) {
+      setResponsables(prev => prev.filter(r => r.id !== confirmEliminarResp));
+      showToast('Responsable eliminado', 'success');
+    }
   };
 
   const handleEliminarProg = async () => {
     if (!confirmEliminarProg) return;
-    await deleteProgramacion(confirmEliminarProg.id);
-    await cargarProgramaciones();
+    const ok = await deleteProgramacion(confirmEliminarProg.id);
+    if (ok) {
+      await cargarProgramaciones();
+      showToast('Programación eliminada', 'success');
+    }
   };
 
   const handleToggleNotificado = async () => {
     if (!confirmNotificado) return;
     const nuevoEstado = !confirmNotificado.notificado;
-    await toggleNotificado(confirmNotificado.id, nuevoEstado);
-    setResponsables(prev => prev.map(r => r.id === confirmNotificado.id ? { ...r, notificado: nuevoEstado } : r));
+    const ok = await toggleNotificado(confirmNotificado.id, nuevoEstado);
+    if (ok) {
+      setResponsables(prev => prev.map(r => r.id === confirmNotificado.id ? { ...r, notificado: nuevoEstado } : r));
+      showToast(nuevoEstado ? 'Marcado como notificado' : 'Marcado como pendiente', 'success');
+    }
   };
 
   const handleToggleActivo = async (prog: Programacion) => {
-    await toggleActivo(prog.id, !prog.activo);
+    const nuevoEstado = !prog.activo;
+    const ok = await toggleActivo(prog.id, nuevoEstado);
     setMenuProg(null);
-    await cargarProgramaciones();
+    if (ok) {
+      await cargarProgramaciones();
+      showToast(nuevoEstado ? 'Programación reactivada' : 'Programación desactivada', 'success');
+    }
   };
 
   const abrirDetalles = async (prog: Programacion) => {
@@ -386,7 +408,6 @@ export function ProgramacionHome() {
         onClose={() => setAsignarPara(null)}
         programacion={asignarPara}
         fechaInicial={fecha}
-        responsablesExistentes={asignarPara ? responsablesPorProg(asignarPara.id) : []}
         onAsignado={cargarResponsables}
       />
 

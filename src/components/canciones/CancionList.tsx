@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Plus, X } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
 import { useRoles } from '../../hooks/useRoles';
+import { useToast } from '../../hooks/useToast';
 import { CancionCard } from './CancionCard';
 import { DotLoader } from '../ui/DotLoader';
 import { EmptyState } from '../ui/EmptyState';
@@ -14,6 +15,7 @@ export function CancionList() {
   const navigate = useNavigate();
   const { getCanciones, deleteCancion, loading } = useCanciones();
   const { canCreateCanciones } = useRoles();
+  const { showToast } = useToast();
   const [todasCanciones, setTodasCanciones] = useState<Cancion[]>([]);
   const [query, setQuery] = useState('');
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -40,8 +42,11 @@ export function CancionList() {
 
   const handleDelete = async () => {
     if (!confirmId) return;
-    await deleteCancion(confirmId);
-    setTodasCanciones(prev => prev.filter(c => c.id !== confirmId));
+    const ok = await deleteCancion(confirmId);
+    if (ok) {
+      setTodasCanciones(prev => prev.filter(c => c.id !== confirmId));
+      showToast('Canción eliminada', 'success');
+    }
   };
 
   return (

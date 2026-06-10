@@ -4,11 +4,12 @@ import { Music2, Settings, CalendarDays, LogOut, UserCircle, Clock } from 'lucid
 import { useAuth } from '../hooks/useAuth';
 import { useRoles } from '../hooks/useRoles';
 import { ProfileSheet } from './ProfileSheet';
+import { DotLoader } from './ui/DotLoader';
 
 export function Home() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { isAdmin, isMiembroNuevo } = useRoles();
+  const { isAdmin, isMiembroNuevo, loading: loadingRoles } = useRoles();
   const [profileOpen, setProfileOpen] = useState(false);
 
   const opciones = [
@@ -66,7 +67,11 @@ export function Home() {
       </header>
 
       <main className="flex-1 px-4 flex flex-col gap-3 max-w-lg mx-auto w-full">
-        {isMiembroNuevo ? (
+        {loadingRoles ? (
+          <div className="flex-1 flex items-center justify-center py-12">
+            <DotLoader />
+          </div>
+        ) : isMiembroNuevo ? (
           <div className="bg-white rounded-2xl border border-amber-200 p-6 flex flex-col items-center text-center gap-3">
             <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
               <Clock className="w-7 h-7 text-amber-600" />

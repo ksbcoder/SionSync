@@ -4,6 +4,7 @@ import { ArrowLeft, MoreVertical, Plus, Presentation, Trash2 } from 'lucide-reac
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useCancionDetalle } from '../../hooks/useCancionDetalle';
 import { useCanEdit } from '../../hooks/useRoles';
+import { useToast } from '../../hooks/useToast';
 import { SeccionItem } from '../secciones/SeccionItem';
 import { BottomSheet } from '../layout/BottomSheet';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
@@ -20,6 +21,7 @@ export function CancionDetalle() {
     eliminarSeccion, moverSeccion, duplicar,
     agregarNota, editarNota, eliminarNota,
   } = useCancionDetalle(id);
+  const { showToast } = useToast();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [addSeccionOpen, setAddSeccionOpen] = useState(false);
@@ -198,7 +200,7 @@ export function CancionDetalle() {
       <ConfirmSheet
         isOpen={confirmCancion}
         onClose={() => setConfirmCancion(false)}
-        onConfirm={async () => { await eliminarCancion(); navigate('/canciones'); }}
+        onConfirm={async () => { const ok = await eliminarCancion(); if (ok) { showToast('Canción eliminada', 'success'); navigate('/canciones'); } }}
         title="¿Eliminar esta canción?"
         description="Se eliminarán todas sus secciones y acordes. Esta acción no se puede deshacer."
       />

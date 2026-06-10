@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BottomSheet } from '../layout/BottomSheet';
 import { DotLoader } from '../ui/DotLoader';
 import { useProgramaciones } from '../../hooks/useProgramaciones';
+import { useToast } from '../../hooks/useToast';
 import type { TipoProgramacion, Programacion } from '../../domain';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 
 export function CrearProgramacionSheet({ isOpen, onClose, programacionesExistentes, onCreada }: Props) {
   const { getTipos, createProgramacion, loading } = useProgramaciones();
+  const { showToast } = useToast();
   const [tipos, setTipos] = useState<TipoProgramacion[]>([]);
   const [loadingTipos, setLoadingTipos] = useState(false);
 
@@ -26,9 +28,12 @@ export function CrearProgramacionSheet({ isOpen, onClose, programacionesExistent
   const tiposDisponibles = tipos.filter(t => !tiposUsados.has(t.id));
 
   const handleCrear = async (tipoId: string) => {
-    await createProgramacion({ tipo_id: tipoId });
-    onCreada();
-    onClose();
+    const created = await createProgramacion({ tipo_id: tipoId });
+    if (created) {
+      onCreada();
+      onClose();
+      showToast('Programación creada', 'success');
+    }
   };
 
   return (
