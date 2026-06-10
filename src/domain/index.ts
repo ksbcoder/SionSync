@@ -10,3 +10,4 @@ export type { Profile, UserRole, UsuarioConRol, RoleName } from './usuario';
 export { ROLES_INFO } from './usuario';
 
 export type { TipoProgramacion, Programacion, ProgramacionInsert, ResponsableProgramacion, ResponsableInsert } from './programacion';
+export { COLORES_TIPO_PROGRAMACION } from './programacion';

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Trash2, Bell, BellOff, MoreVertical, UserPlus, Power, Info } from 'lucide-react';
 import { useRoles } from '../../hooks/useRoles';
@@ -18,6 +18,16 @@ import type { Programacion, ResponsableProgramacion } from '../../domain';
 function formatFecha(fecha: string): string {
   const d = new Date(fecha + 'T12:00:00');
   return d.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+const LETRAS_DIA = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+function inicioSemana(fecha: string): string {
+  const d = new Date(fecha + 'T12:00:00');
+  const dow = d.getDay();
+  const diff = dow === 0 ? -6 : 1 - dow;
+  d.setDate(d.getDate() + diff);
+  return toISODate(d);
 }
 
 function toISODate(d: Date): string {
@@ -43,12 +53,32 @@ export function ProgramacionHome() {
   const { showToast } = useToast();
   const { isAdmin, canGestionarProgramacion, canGestionarNotificaciones } = useRoles();
   const { getProgramaciones, deleteProgramacion, toggleActivo, loading: loadingProg } = useProgramaciones();
-  const { getResponsablesFecha, eliminarResponsable, toggleNotificado, loading: loadingResp } = useResponsables();
+  const { getResponsablesRango, eliminarResponsable, toggleNotificado, loading: loadingResp } = useResponsables();
 
   const [fecha, setFecha] = useState(hoy);
   const [verInactivas, setVerInactivas] = useState(false);
   const [todasProgramaciones, setTodasProgramaciones] = useState<Programacion[]>([]);
-  const [responsables, setResponsables] = useState<ResponsableProgramacion[]>([]);
+  const [responsablesSemana, setResponsablesSemana] = useState<ResponsableProgramacion[]>([]);
+
+  const diasSemana = useMemo(() => {
+    const inicio = inicioSemana(fecha);
+    return Array.from({ length: 7 }, (_, i) => sumarDias(inicio, i));
+  }, [fecha]);
+
+  const responsables = responsablesSemana.filter(r => r.fecha === fecha);
+
+  const coloresPorFecha = useMemo(() => {
+    const progPorId = new Map(todasProgramaciones.map(p => [p.id, p]));
+    const m = new Map<string, string[]>();
+    for (const r of responsablesSemana) {
+      const color = progPorId.get(r.programacion_id)?.tipos_programacion?.color;
+      if (!color) continue;
+      const arr = m.get(r.fecha) ?? [];
+      if (!arr.includes(color)) arr.push(color);
+      m.set(r.fecha, arr);
+    }
+    return m;
+  }, [responsablesSemana, todasProgramaciones]);
 
   const puedeEditarProg = (prog: Programacion) => isAdmin || (canGestionarProgramacion && prog.user_id === user?.id);
 
@@ -69,13 +99,13 @@ export function ProgramacionHome() {
     setTodasProgramaciones(data ?? []);
   }, [getProgramaciones]);
 
-  const cargarResponsables = useCallback(async () => {
-    const data = await getResponsablesFecha(fecha);
-    setResponsables(data ?? []);
-  }, [getResponsablesFecha, fecha]);
+  const cargarSemana = useCallback(async () => {
+    const data = await getResponsablesRango(diasSemana[0], diasSemana[6]);
+    setResponsablesSemana(data ?? []);
+  }, [getResponsablesRango, diasSemana]);
 
   useEffect(() => { cargarProgramaciones(); }, [cargarProgramaciones]);
-  useEffect(() => { cargarResponsables(); }, [cargarResponsables]);
+  useEffect(() => { cargarSemana(); }, [cargarSemana]);
 
   const mostrandoInactivas = canGestionarProgramacion && verInactivas;
   const filtradas = todasProgramaciones.filter(p => p.activo === !mostrandoInactivas);
@@ -88,7 +118,7 @@ export function ProgramacionHome() {
     if (!confirmEliminarResp) return;
     const ok = await eliminarResponsable(confirmEliminarResp);
     if (ok) {
-      setResponsables(prev => prev.filter(r => r.id !== confirmEliminarResp));
+      setResponsablesSemana(prev => prev.filter(r => r.id !== confirmEliminarResp));
       showToast('Responsable eliminado', 'success');
     }
   };
@@ -107,7 +137,7 @@ export function ProgramacionHome() {
     const nuevoEstado = !confirmNotificado.notificado;
     const ok = await toggleNotificado(confirmNotificado.id, nuevoEstado);
     if (ok) {
-      setResponsables(prev => prev.map(r => r.id === confirmNotificado.id ? { ...r, notificado: nuevoEstado } : r));
+      setResponsablesSemana(prev => prev.map(r => r.id === confirmNotificado.id ? { ...r, notificado: nuevoEstado } : r));
       showToast(nuevoEstado ? 'Marcado como notificado' : 'Marcado como pendiente', 'success');
     }
   };
@@ -146,7 +176,7 @@ export function ProgramacionHome() {
   const responsablesPorProg = (progId: string) =>
     responsables.filter(r => r.programacion_id === progId);
 
-  const loading = (loadingProg && !todasProgramaciones.length) || (loadingResp && !responsables.length);
+  const loading = (loadingProg && !todasProgramaciones.length) || (loadingResp && !responsablesSemana.length);
 
   return (
     <div className="min-h-svh bg-gray-50">
@@ -174,30 +204,64 @@ export function ProgramacionHome() {
       </header>
 
       <div className="sticky top-[57px] bg-gray-50 px-4 pt-3 pb-2 z-10">
-        <div className="flex items-center justify-between max-w-lg mx-auto bg-white rounded-xl border border-gray-200 px-2 py-1">
-          <button
-            onClick={() => setFecha(f => sumarDias(f, -1))}
-            className="min-h-[40px] min-w-[40px] flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setFecha(hoy())}
-            className="flex-1 text-center py-2"
-          >
-            <span className={`text-sm font-medium ${fecha === hoy() ? 'text-brand-700' : 'text-gray-700'}`}>
-              {formatFecha(fecha)}
-            </span>
-            {fecha !== hoy() && (
-              <span className="block text-xs text-brand-500">Volver a hoy</span>
-            )}
-          </button>
-          <button
-            onClick={() => setFecha(f => sumarDias(f, 1))}
-            className="min-h-[40px] min-w-[40px] flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+        <div className="max-w-lg mx-auto bg-white rounded-xl border border-gray-200 px-2 py-2">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setFecha(f => sumarDias(f, -7))}
+              className="min-h-[40px] min-w-[36px] flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg"
+              aria-label="Semana anterior"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <div className="flex-1 grid grid-cols-7 gap-0.5">
+              {diasSemana.map((dia, i) => {
+                const d = new Date(dia + 'T12:00:00');
+                const esSeleccionado = dia === fecha;
+                const esHoy = dia === hoy();
+                const colores = coloresPorFecha.get(dia) ?? [];
+                return (
+                  <button
+                    key={dia}
+                    onClick={() => setFecha(dia)}
+                    className={`flex flex-col items-center py-1.5 rounded-lg transition-colors ${
+                      esSeleccionado ? 'bg-stage-bg text-white' : 'hover:bg-brand-100 text-gray-700'
+                    }`}
+                  >
+                    <span className={`text-[10px] font-medium uppercase ${esSeleccionado ? 'text-white/70' : 'text-gray-400'}`}>
+                      {LETRAS_DIA[i]}
+                    </span>
+                    <span className={`text-sm font-semibold ${esHoy && !esSeleccionado ? 'text-brand-700' : ''}`}>
+                      {d.getDate()}
+                    </span>
+                    <span className="flex items-center gap-0.5 mt-1 h-1.5">
+                      {colores.slice(0, 3).map((c, idx) => (
+                        <span
+                          key={idx}
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setFecha(f => sumarDias(f, 7))}
+              className="min-h-[40px] min-w-[36px] flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg"
+              aria-label="Semana siguiente"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+          {fecha !== hoy() && (
+            <button
+              onClick={() => setFecha(hoy())}
+              className="block w-full text-center text-xs text-brand-500 mt-1.5"
+            >
+              Volver a hoy
+            </button>
+          )}
         </div>
       </div>
 
@@ -232,7 +296,10 @@ export function ProgramacionHome() {
                 <div className="bg-white">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-brand-500" />
+                      <span
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: prog.tipos_programacion?.color ?? '#6366f1' }}
+                      />
                       <h2 className="font-semibold text-gray-800">
                         {prog.tipos_programacion?.nombre ?? 'Programación'}
                       </h2>
@@ -325,7 +392,7 @@ export function ProgramacionHome() {
               onClick={() => { setAsignarPara(menuProg); setMenuProg(null); }}
               className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
             >
-              <UserPlus className="w-5 h-5 text-brand-600" />
+              <UserPlus className="w-5 h-5 text-brand-700" />
               <div>
                 <p className="font-medium text-gray-800">Asignar responsable</p>
                 <p className="text-xs text-gray-400 mt-0.5">Agregar personas para el {formatFecha(fecha)}</p>
@@ -336,7 +403,7 @@ export function ProgramacionHome() {
             onClick={() => { if (menuProg) handleToggleActivo(menuProg); }}
             className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
           >
-            <Power className={`w-5 h-5 ${menuProg?.activo ? 'text-amber-600' : 'text-green-600'}`} />
+            <Power className={`w-5 h-5 ${menuProg?.activo ? 'text-warning' : 'text-success'}`} />
             <div>
               <p className="font-medium text-gray-800">
                 {menuProg?.activo ? 'Desactivar programación' : 'Reactivar programación'}
@@ -350,7 +417,7 @@ export function ProgramacionHome() {
             onClick={() => { if (menuProg) abrirDetalles(menuProg); }}
             className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
           >
-            <Info className="w-5 h-5 text-gray-500" />
+            <Info className="w-5 h-5 text-stage-muted" />
             <div>
               <p className="font-medium text-gray-800">Detalles</p>
               <p className="text-xs text-gray-400 mt-0.5">Ver quién creó y modificó</p>
@@ -358,12 +425,12 @@ export function ProgramacionHome() {
           </button>
           <button
             onClick={() => { setConfirmEliminarProg(menuProg); setMenuProg(null); }}
-            className="w-full text-left p-4 rounded-xl hover:bg-red-50 border border-red-200 transition-colors flex items-center gap-3"
+            className="w-full text-left p-4 rounded-xl hover:bg-red-50 border border-red-100 transition-colors flex items-center gap-3"
           >
-            <Trash2 className="w-5 h-5 text-red-600" />
+            <Trash2 className="w-5 h-5 text-danger" />
             <div>
-              <p className="font-medium text-red-700">Eliminar programación</p>
-              <p className="text-xs text-red-400 mt-0.5">Se eliminarán todos los responsables asociados</p>
+              <p className="font-medium text-danger">Eliminar programación</p>
+              <p className="text-xs text-gray-400 mt-0.5">Se eliminarán todos los responsables asociados</p>
             </div>
           </button>
         </div>
@@ -408,7 +475,7 @@ export function ProgramacionHome() {
         onClose={() => setAsignarPara(null)}
         programacion={asignarPara}
         fechaInicial={fecha}
-        onAsignado={cargarResponsables}
+        onAsignado={cargarSemana}
       />
 
       <CrearProgramacionSheet

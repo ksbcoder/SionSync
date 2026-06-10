@@ -1,8 +1,21 @@
 export interface TipoProgramacion {
   id: string;
   nombre: string;
+  color: string;
   created_at: string;
 }
+
+export const COLORES_TIPO_PROGRAMACION = [
+  '#6366f1', // indigo (brand)
+  '#818cf8', // indigo claro
+  '#8b5cf6', // violet
+  '#0ea5e9', // sky
+  '#06b6d4', // cyan
+  '#14b8a6', // teal
+  '#10b981', // emerald
+  '#f59e0b', // amber
+  '#ec4899', // pink
+] as const;
 
 export interface Programacion {
   id: string;

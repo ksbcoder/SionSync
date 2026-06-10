@@ -36,20 +36,20 @@ export const programacionRepository = {
     return data ?? [];
   },
 
-  async createTipo(nombre: string): Promise<TipoProgramacion> {
+  async createTipo(nombre: string, color: string): Promise<TipoProgramacion> {
     const { data, error } = await supabase
       .from('tipos_programacion')
-      .insert({ nombre })
+      .insert({ nombre, color })
       .select()
       .single();
     if (error) throw new Error(error.message);
     return data;
   },
 
-  async updateTipo(id: string, nombre: string): Promise<void> {
+  async updateTipo(id: string, nombre: string, color: string): Promise<void> {
     const { error } = await supabase
       .from('tipos_programacion')
-      .update({ nombre })
+      .update({ nombre, color })
       .eq('id', id);
     if (error) throw new Error(error.message);
   },
