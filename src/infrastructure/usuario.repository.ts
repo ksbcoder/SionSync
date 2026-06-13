@@ -27,9 +27,13 @@ export const usuarioRepository = {
       .select('roles(name)')
       .eq('user_id', userId);
     if (error) throw new Error(error.message);
-    return (data ?? [])
-      .map((ur: any) => ur.roles?.name as RoleName)
-      .filter(Boolean);
+    // La relación 'roles' llega como objeto anidado, aunque los tipos generados
+    // por Supabase a veces la describen como arreglo: normalizamos ambos casos.
+    type FilaRol = { roles: { name: RoleName } | { name: RoleName }[] | null };
+    const filas = (data ?? []) as unknown as FilaRol[];
+    return filas
+      .map(ur => (Array.isArray(ur.roles) ? ur.roles[0]?.name : ur.roles?.name))
+      .filter((name): name is RoleName => Boolean(name));
   },
 
   async updateConsent(userId: string, version: string): Promise<void> {
