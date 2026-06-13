@@ -28,10 +28,24 @@ export function usePushNotifications() {
       setEstado('denegado');
       return;
     }
-    navigator.serviceWorker.ready
-      .then(reg => reg.pushManager.getSubscription())
-      .then(sub => setEstado(sub ? 'activo' : 'inactivo'))
-      .catch(() => setEstado('inactivo'));
+    let cancelado = false;
+    (async () => {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        // 'activo' solo si este navegador tiene suscripción Y esta cuenta la
+        // tiene guardada en la base. En un equipo compartido, otra cuenta pudo
+        // dejar la suscripción del navegador, pero esta cuenta no está en la
+        // base: para ella sigue siendo 'inactivo'.
+        const enLaBase = sub
+          ? await pushRepository.tieneSuscripcionEnEsteDispositivo()
+          : false;
+        if (!cancelado) setEstado(sub && enLaBase ? 'activo' : 'inactivo');
+      } catch {
+        if (!cancelado) setEstado('inactivo');
+      }
+    })();
+    return () => { cancelado = true; };
   }, []);
 
   const activar = useCallback(async () => {
@@ -67,11 +81,10 @@ export function usePushNotifications() {
     if (procesando) return;
     setProcesando(true);
     try {
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.getSubscription();
-      if (sub) await sub.unsubscribe();
-      // Borramos por el carné del dispositivo, no por el endpoint: así se
-      // limpia la fila aunque el navegador ya haya perdido la suscripción.
+      // Solo borramos la fila de ESTA cuenta (por su carné de dispositivo).
+      // No soltamos la suscripción del navegador: en un equipo compartido es
+      // la misma para varias cuentas, y por seguridad (RLS) no podemos ver si
+      // otra cuenta aún la necesita. Sin fila en la base, ya no le llegan avisos.
       await pushRepository.eliminarSuscripcion();
       setEstado('inactivo');
     } finally {
