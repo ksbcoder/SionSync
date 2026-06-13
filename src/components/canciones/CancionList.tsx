@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, X } from 'lucide-react';
+import { ArrowLeft, Search, Plus, X } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
+import { useRealtime } from '../../hooks/useRealtime';
+import { useRecargarAlVolver } from '../../hooks/useRecargarAlVolver';
 import { useRoles } from '../../hooks/useRoles';
 import { useToast } from '../../hooks/useToast';
 import { CancionCard } from './CancionCard';
 import { DotLoader } from '../ui/DotLoader';
 import { EmptyState } from '../ui/EmptyState';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
-import { Header } from '../layout/Header';
 import type { Cancion } from '../../domain';
 
 export function CancionList() {
@@ -31,6 +32,10 @@ export function CancionList() {
 
   useEffect(() => { cargar(); }, [cargar]);
 
+  // En vivo + recarga al volver a la app, para no quedar con la lista vieja.
+  useRealtime(['canciones'], cargar);
+  useRecargarAlVolver(cargar);
+
   const canciones = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return todasCanciones;
@@ -51,9 +56,18 @@ export function CancionList() {
 
   return (
     <div className="min-h-svh bg-[#f8faff]">
-      <Header onNuevaCancion={canCreateCanciones ? () => navigate('/cancion/nueva') : undefined} />
+      <header className="sticky top-0 bg-white border-b border-gray-200 flex items-center gap-2 px-4 py-3 z-30">
+        <button
+          onClick={() => navigate('/')}
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-xl"
+          aria-label="Volver al inicio"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="flex-1 text-lg font-semibold text-gray-800">Canciones</h1>
+      </header>
 
-      <div className="sticky top-0 bg-[#f8faff] px-4 pt-4 pb-2 z-20 md:top-[65px]">
+      <div className="sticky top-[57px] bg-[#f8faff] px-4 pt-4 pb-2 z-20">
         <div className="relative max-w-2xl mx-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -93,8 +107,8 @@ export function CancionList() {
       {canCreateCanciones && (
         <button
           onClick={() => navigate('/cancion/nueva')}
-          className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
-          style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom) + 0.75rem)' }}
+          className="fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
+          style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
           aria-label="Nueva canción"
         >
           <Plus className="w-6 h-6" />

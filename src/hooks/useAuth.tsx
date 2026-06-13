@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     }).finally(() => setLoading(false));
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const nextUser = session?.user ?? null;
       setSession(session);
       // Mantener la misma referencia si el usuario no cambió, para no disparar
@@ -36,22 +36,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(prev => (prev?.id === nextUser?.id ? prev : nextUser));
 
       // La sincronización de nombre solo tiene sentido al iniciar sesión.
-      // Hacerlo en TOKEN_REFRESHED dispara setUser de nuevo y rerenders extra.
+      // IMPORTANTE: debe ir en setTimeout. Supabase mantiene un candado interno
+      // mientras corre este callback; llamar a supabase aquí dentro provoca un
+      // bloqueo mutuo que deja colgadas todas las peticiones de la app.
       if (session?.user && _event === 'SIGNED_IN') {
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('display_name')
-            .eq('id', session.user.id)
-            .single();
+        const userId = session.user.id;
+        const nombreActual = session.user.user_metadata?.full_name;
+        setTimeout(async () => {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('display_name')
+              .eq('id', userId)
+              .single();
 
-          if (profile && profile.display_name !== session.user.user_metadata?.full_name) {
-            const { data } = await supabase.auth.updateUser({ data: { full_name: profile.display_name } });
-            if (data.user) setUser(data.user);
+            if (profile && profile.display_name !== nombreActual) {
+              const { data } = await supabase.auth.updateUser({ data: { full_name: profile.display_name } });
+              if (data.user) setUser(data.user);
+            }
+          } catch {
+            // La sincronización de nombre no es crítica
           }
-        } catch {
-          // La sincronización de nombre no es crítica
-        }
+        }, 0);
       }
     });
 

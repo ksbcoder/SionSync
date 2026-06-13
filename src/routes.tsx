@@ -44,9 +44,9 @@ export function AppRoutes() {
 
         <Route path="/canciones" element={<Layout><CancionList /></Layout>} />
         <Route path="/canciones/buscar" element={<Layout><CancionList /></Layout>} />
-        <Route path="/cancion/nueva" element={<Layout hideBottomNav><CancionForm /></Layout>} />
-        <Route path="/cancion/:id" element={<Layout hideBottomNav><CancionDetalle /></Layout>} />
-        <Route path="/cancion/:id/editar" element={<Layout hideBottomNav><CancionEditWrapper /></Layout>} />
+        <Route path="/cancion/nueva" element={<Layout><CancionForm /></Layout>} />
+        <Route path="/cancion/:id" element={<Layout><CancionDetalle /></Layout>} />
+        <Route path="/cancion/:id/editar" element={<Layout><CancionEditWrapper /></Layout>} />
         <Route path="/cancion/:id/presentacion" element={<CancionPresentacion />} />
 
         <Route path="/programacion" element={<ProgramacionHome />} />

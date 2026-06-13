@@ -29,7 +29,7 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* 3.5rem = altura BottomNav + margen. Se suma la bahía del dispositivo */
+  /* 3.5rem = espacio para que el botón flotante no tape el último elemento */
   .pb-safe-nav {
     padding-bottom: calc(3.5rem + env(safe-area-inset-bottom));
   }
