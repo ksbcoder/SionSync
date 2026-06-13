@@ -1,41 +1,26 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Music2, Bell } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
-import { pushRepository } from '../../infrastructure/push.repository';
 import { DotLoader } from '../ui/DotLoader';
 
 /**
  * Tras aceptar el consentimiento, ofrece activar las notificaciones en este
- * dispositivo si —según la base de datos— este usuario aún no tiene una
- * suscripción guardada para este equipo. Consultar la base (y no una marca
- * local) hace la decisión más fiable: refleja el estado real del sistema.
+ * dispositivo si esta cuenta aún no las tiene. El estado lo decide el hook
+ * consultando la base de datos (no una marca local ni solo el navegador), así
+ * que en un equipo compartido cada cuenta ve lo que de verdad le corresponde.
  *
  * Si las activa o las pospone, no se vuelve a preguntar durante esta sesión.
  * En un próximo inicio, si sigue sin suscripción, se le volverá a ofrecer.
  */
 export function NotificacionesGate({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
   const { estado, procesando, activar } = usePushNotifications();
-  const [tieneSuscripcion, setTieneSuscripcion] = useState<boolean | null>(null);
   const [pospuesto, setPospuesto] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-    let cancelado = false;
-    pushRepository
-      .tieneSuscripcionEnEsteDispositivo()
-      .then(existe => { if (!cancelado) setTieneSuscripcion(existe); })
-      // Ante una falla (red, etc.) asumimos que sí tiene, para no molestar.
-      .catch(() => { if (!cancelado) setTieneSuscripcion(true); });
-    return () => { cancelado = true; };
-  }, [user]);
+  // Ya lo pospuso/activó en esta sesión: no interrumpimos.
+  if (pospuesto) return <>{children}</>;
 
-  // Sin usuario, o si ya lo pospuso/activó en esta sesión, no interrumpimos.
-  if (!user || pospuesto) return <>{children}</>;
-
-  // Esperamos la respuesta de la base de datos y el estado del navegador.
-  if (tieneSuscripcion === null || estado === 'cargando') {
+  // Esperamos a conocer el estado real de las notificaciones.
+  if (estado === 'cargando') {
     return (
       <div className="min-h-svh bg-app flex items-center justify-center">
         <DotLoader />
@@ -43,11 +28,10 @@ export function NotificacionesGate({ children }: { children: ReactNode }) {
     );
   }
 
-  // Ya está suscrito en este dispositivo (según la base), o el navegador no
-  // puede ofrecerlo (no soportado o bloqueado): seguimos sin preguntar.
-  if (tieneSuscripcion || estado === 'no-soportado' || estado === 'denegado') {
-    return <>{children}</>;
-  }
+  // Solo ofrecemos cuando esta cuenta no tiene los recordatorios activos en
+  // este dispositivo. En los demás casos (ya activos, no soportado, bloqueado)
+  // seguimos sin preguntar.
+  if (estado !== 'inactivo') return <>{children}</>;
 
   const handleActivar = async () => {
     try {
