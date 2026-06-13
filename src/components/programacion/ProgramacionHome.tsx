@@ -7,7 +7,6 @@ import { useToast } from '../../hooks/useToast';
 import { useProgramaciones, useResponsables } from '../../hooks/useProgramaciones';
 import { useProgramacionSemana } from '../../hooks/useProgramacionSemana';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
-import { DotLoader } from '../ui/DotLoader';
 import { EmptyState } from '../ui/EmptyState';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { BottomSheet } from '../layout/BottomSheet';
@@ -156,7 +155,20 @@ export function ProgramacionHome() {
 
       <main className="px-4 py-3 max-w-lg mx-auto flex flex-col gap-4">
         {loading ? (
-          <DotLoader text="Cargando programación..." />
+          <div className="flex flex-col gap-4" aria-busy="true" aria-label="Cargando programación">
+            {[0, 1].map(i => (
+              <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 animate-pulse">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2.5 h-2.5 rounded-full bg-gray-200" />
+                  <div className="h-4 w-28 bg-gray-200 rounded" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="h-3 w-40 bg-gray-100 rounded" />
+                  <div className="h-8 w-8 bg-gray-100 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : programacionesVisibles.length === 0 ? (
           <EmptyState
             title={

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Calendar } from 'lucide-react';
 import { BottomSheet } from '../layout/BottomSheet';
 import { DotLoader } from '../ui/DotLoader';
 import { useResponsables } from '../../hooks/useProgramaciones';
 import { useToast } from '../../hooks/useToast';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { responsableRepository } from '../../infrastructure/programacion.repository';
+import { formatFecha } from '../../domain';
 import type { Programacion, ResponsableProgramacion, UsuarioConRol } from '../../domain';
 
 interface Props {
@@ -22,33 +23,40 @@ export function AsignarResponsableSheet({ isOpen, onClose, programacion, fechaIn
   const [usuarios, setUsuarios] = useState<UsuarioConRol[]>([]);
   const [existentes, setExistentes] = useState<ResponsableProgramacion[]>([]);
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
-  const [fecha, setFecha] = useState(fechaInicial);
   const [loadingUsuarios, setLoadingUsuarios] = useState(false);
   const [loadingExistentes, setLoadingExistentes] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
-    setFecha(fechaInicial);
     setLoadingUsuarios(true);
     usuarioRepository.getAll()
       .then(data => setUsuarios(data.filter(u => u.active)))
       .finally(() => setLoadingUsuarios(false));
-  }, [isOpen, fechaInicial]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !programacion) return;
+    // Cancelamos la consulta anterior: si cambia la fecha (o se cierra) antes
+    // de que responda, ignoramos ese resultado para que una respuesta vieja no
+    // pise los responsables de la fecha actual.
+    let cancelado = false;
     setLoadingExistentes(true);
-    responsableRepository.getByProgramacionYFecha(programacion.id, fecha)
+    responsableRepository.getByProgramacionYFecha(programacion.id, fechaInicial)
       .then(data => {
+        if (cancelado) return;
         setExistentes(data);
         setSeleccionados(new Set(data.map(r => r.user_id)));
       })
       .catch(() => {
+        if (cancelado) return;
         setExistentes([]);
         setSeleccionados(new Set());
       })
-      .finally(() => setLoadingExistentes(false));
-  }, [isOpen, programacion, fecha]);
+      .finally(() => {
+        if (!cancelado) setLoadingExistentes(false);
+      });
+    return () => { cancelado = true; };
+  }, [isOpen, programacion, fechaInicial]);
 
   const toggleUsuario = (id: string) => {
     setSeleccionados(prev => {
@@ -72,7 +80,7 @@ export function AsignarResponsableSheet({ isOpen, onClose, programacion, fechaIn
       const inserts = aAgregar.map(user_id => ({
         programacion_id: programacion.id,
         user_id,
-        fecha,
+        fecha: fechaInicial,
       }));
       const result = await asignarVarios(inserts);
       if (!result) ok = false;
@@ -107,12 +115,10 @@ export function AsignarResponsableSheet({ isOpen, onClose, programacion, fechaIn
       <div className="flex flex-col gap-3">
         <div>
           <label className="text-sm text-gray-500 block mb-1">Fecha de responsabilidad</label>
-          <input
-            type="date"
-            value={fecha}
-            onChange={e => setFecha(e.target.value)}
-            className="w-full h-10 px-3 border border-gray-200 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-300"
-          />
+          <div className="flex items-center gap-2 h-11 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-700">
+            <Calendar className="w-4 h-4 text-brand-500 shrink-0" />
+            <span className="capitalize">{formatFecha(fechaInicial)}</span>
+          </div>
         </div>
 
         {loading ? (
@@ -143,7 +149,7 @@ export function AsignarResponsableSheet({ isOpen, onClose, programacion, fechaIn
 
         <button
           onClick={handleGuardar}
-          disabled={saving || !hayCambios || !fecha}
+          disabled={saving || !hayCambios || !fechaInicial}
           className="w-full min-h-[44px] rounded-lg bg-brand-500 text-white font-medium text-sm hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? 'Guardando...' : hayCambios ? 'Guardar cambios' : 'Sin cambios'}
