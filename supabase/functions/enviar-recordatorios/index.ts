@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     }
 
     const payload = JSON.stringify({
-      title: 'Recordatorio de SionSync',
+      title: 'Recordatorio',
       body: `Te toca ${nombreDelTipo(r)} — ${legible}`,
       url: '/',
       tag: `resp-${r.id}`,
