@@ -69,10 +69,10 @@ export function usePushNotifications() {
     try {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
-      if (sub) {
-        await pushRepository.eliminarSuscripcion(sub.endpoint);
-        await sub.unsubscribe();
-      }
+      if (sub) await sub.unsubscribe();
+      // Borramos por el carné del dispositivo, no por el endpoint: así se
+      // limpia la fila aunque el navegador ya haya perdido la suscripción.
+      await pushRepository.eliminarSuscripcion();
       setEstado('inactivo');
     } finally {
       setProcesando(false);
