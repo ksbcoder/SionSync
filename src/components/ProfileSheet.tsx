@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Pencil, Check, X } from 'lucide-react';
+import { Pencil, Check, X, Bell, BellOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useToast } from '../hooks/useToast';
 import { usuarioRepository } from '../infrastructure/usuario.repository';
 import { BottomSheet } from './layout/BottomSheet';
 
@@ -15,6 +17,24 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
+  const { estado, procesando, activar, desactivar } = usePushNotifications();
+  const { showToast } = useToast();
+
+  const handleToggleNotificaciones = async () => {
+    try {
+      if (estado === 'activo') {
+        await desactivar();
+        showToast('Notificaciones desactivadas', 'success');
+      } else {
+        await activar();
+        if (Notification.permission === 'granted') {
+          showToast('Notificaciones activadas en este dispositivo', 'success');
+        }
+      }
+    } catch {
+      showToast('No se pudo cambiar las notificaciones', 'error');
+    }
+  };
 
   useEffect(() => {
     if (isOpen) setEditing(false);
@@ -92,6 +112,48 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
           <div>
             <label className="text-xs text-slate-400 uppercase tracking-wide">Correo</label>
             <p className="text-sm text-slate-800 mt-1">{user?.email ?? ''}</p>
+          </div>
+
+          <div>
+            <label className="text-xs text-slate-400 uppercase tracking-wide">Notificaciones</label>
+            {estado === 'no-soportado' ? (
+              <p className="text-sm text-slate-500 mt-1">
+                Este navegador no permite notificaciones. En iPhone, agrega antes la app a la
+                pantalla de inicio.
+              </p>
+            ) : estado === 'denegado' ? (
+              <p className="text-sm text-slate-500 mt-1">
+                Las notificaciones están bloqueadas. Actívalas desde los ajustes del navegador
+                para este sitio.
+              </p>
+            ) : (
+              <div className="flex items-center justify-between gap-3 mt-1">
+                <p className="text-sm text-slate-600">
+                  {estado === 'activo'
+                    ? 'Recibes recordatorios en este dispositivo.'
+                    : 'Activa los recordatorios de tus responsabilidades.'}
+                </p>
+                <button
+                  onClick={handleToggleNotificaciones}
+                  disabled={procesando || estado === 'cargando'}
+                  className={`shrink-0 min-h-[40px] px-3 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors disabled:opacity-50 ${
+                    estado === 'activo'
+                      ? 'text-slate-600 hover:bg-slate-100 border border-slate-200'
+                      : 'text-white bg-brand-500 hover:bg-brand-600'
+                  }`}
+                >
+                  {estado === 'activo' ? (
+                    <>
+                      <BellOff className="w-4 h-4" /> Desactivar
+                    </>
+                  ) : (
+                    <>
+                      <Bell className="w-4 h-4" /> {procesando ? 'Activando...' : 'Activar'}
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
     </BottomSheet>
