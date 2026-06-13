@@ -1,11 +1,6 @@
 import { supabase } from './supabase';
+import { getUserId } from './auth';
 import type { Cancion, CancionInsert } from '../domain';
-
-async function getUserId(): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No authenticated user');
-  return user.id;
-}
 
 export const cancionRepository = {
   async getAll(): Promise<Cancion[]> {

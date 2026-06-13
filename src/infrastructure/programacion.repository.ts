@@ -1,13 +1,12 @@
 import { supabase } from './supabase';
+import { getUserId } from './auth';
 import type { TipoProgramacion, Programacion, ProgramacionInsert, ResponsableProgramacion, ResponsableInsert } from '../domain';
 
-async function getUserId(): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('No authenticated user');
-  return user.id;
-}
+// Fila cruda de responsables tal como llega de la base, sin los perfiles aún
+// adjuntados (eso lo hace enriquecerConPerfiles).
+type ResponsableSinPerfiles = Omit<ResponsableProgramacion, 'profiles' | 'asignante'>;
 
-async function enriquecerConPerfiles(responsables: any[]): Promise<ResponsableProgramacion[]> {
+async function enriquecerConPerfiles(responsables: ResponsableSinPerfiles[]): Promise<ResponsableProgramacion[]> {
   if (responsables.length === 0) return [];
 
   const userIds = [...new Set(responsables.flatMap(r => [r.user_id, r.asignado_por]))];
@@ -21,8 +20,8 @@ async function enriquecerConPerfiles(responsables: any[]): Promise<ResponsablePr
 
   return responsables.map(r => ({
     ...r,
-    profiles: profileMap.get(r.user_id) ?? null,
-    asignante: profileMap.get(r.asignado_por) ?? null,
+    profiles: profileMap.get(r.user_id) ?? undefined,
+    asignante: profileMap.get(r.asignado_por) ?? undefined,
   }));
 }
 

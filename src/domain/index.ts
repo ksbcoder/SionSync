@@ -6,6 +6,8 @@ export { TIPOS_SECCION, calcularSiguienteOrden } from './seccion';
 
 export type { Nota, NotaInsert } from './nota';
 
+export { toISODate, hoy, sumarDias, inicioSemana, formatFecha } from './fecha';
+
 export type { Profile, UserRole, UsuarioConRol, RoleName } from './usuario';
 export { ROLES_INFO } from './usuario';
 
