@@ -2,28 +2,11 @@ import { supabase } from './supabase';
 import { getUserId } from './auth';
 import type { TipoProgramacion, Programacion, ProgramacionInsert, ResponsableProgramacion, ResponsableInsert } from '../domain';
 
-// Fila cruda de responsables tal como llega de la base, sin los perfiles aún
-// adjuntados (eso lo hace enriquecerConPerfiles).
-type ResponsableSinPerfiles = Omit<ResponsableProgramacion, 'profiles' | 'asignante'>;
-
-async function enriquecerConPerfiles(responsables: ResponsableSinPerfiles[]): Promise<ResponsableProgramacion[]> {
-  if (responsables.length === 0) return [];
-
-  const userIds = [...new Set(responsables.flatMap(r => [r.user_id, r.asignado_por]))];
-  const { data: profiles, error } = await supabase
-    .from('profiles')
-    .select('id, display_name')
-    .in('id', userIds);
-  if (error) throw new Error(error.message);
-
-  const profileMap = new Map((profiles ?? []).map(p => [p.id, p]));
-
-  return responsables.map(r => ({
-    ...r,
-    profiles: profileMap.get(r.user_id) ?? undefined,
-    asignante: profileMap.get(r.asignado_por) ?? undefined,
-  }));
-}
+// Trae el responsable junto con su perfil (nombre) y el de quien asignó, en
+// UNA sola consulta. Los '!user_id' / '!asignado_por' le dicen a la base por
+// cuál relación traer cada perfil (ambas columnas apuntan a profiles).
+const SELECT_CON_PERFILES =
+  '*, profiles:profiles!user_id(id, display_name), asignante:profiles!asignado_por(id, display_name)';
 
 export const programacionRepository = {
   async getTipos(): Promise<TipoProgramacion[]> {
@@ -117,60 +100,59 @@ export const responsableRepository = {
   async getByProgramacionYFecha(programacionId: string, fecha: string): Promise<ResponsableProgramacion[]> {
     const { data, error } = await supabase
       .from('responsables_programacion')
-      .select('*')
+      .select(SELECT_CON_PERFILES)
       .eq('programacion_id', programacionId)
       .eq('fecha', fecha)
       .order('created_at');
     if (error) throw new Error(error.message);
-    return enriquecerConPerfiles(data ?? []);
+    return (data ?? []) as unknown as ResponsableProgramacion[];
   },
 
   async getByFecha(fecha: string): Promise<ResponsableProgramacion[]> {
     const { data, error } = await supabase
       .from('responsables_programacion')
-      .select('*')
+      .select(SELECT_CON_PERFILES)
       .eq('fecha', fecha)
       .order('created_at');
     if (error) throw new Error(error.message);
-    return enriquecerConPerfiles(data ?? []);
+    return (data ?? []) as unknown as ResponsableProgramacion[];
   },
 
   async getByRango(desde: string, hasta: string): Promise<ResponsableProgramacion[]> {
     const { data, error } = await supabase
       .from('responsables_programacion')
-      .select('*')
+      .select(SELECT_CON_PERFILES)
       .gte('fecha', desde)
       .lte('fecha', hasta)
       .order('fecha')
       .order('created_at');
     if (error) throw new Error(error.message);
-    return enriquecerConPerfiles(data ?? []);
+    return (data ?? []) as unknown as ResponsableProgramacion[];
   },
 
   async asignar(data: ResponsableInsert): Promise<ResponsableProgramacion> {
     const { data: created, error } = await supabase
       .from('responsables_programacion')
       .insert(data)
-      .select('*')
+      .select(SELECT_CON_PERFILES)
       .single();
     if (error) {
       if (error.code === '23505') throw new Error('Ese responsable ya está asignado para esta fecha.');
       throw new Error(error.message);
     }
-    const [enriched] = await enriquecerConPerfiles([created]);
-    return enriched;
+    return created as unknown as ResponsableProgramacion;
   },
 
   async asignarVarios(data: ResponsableInsert[]): Promise<ResponsableProgramacion[]> {
     const { data: created, error } = await supabase
       .from('responsables_programacion')
       .insert(data)
-      .select('*');
+      .select(SELECT_CON_PERFILES);
     if (error) {
       if (error.code === '23505') throw new Error('Uno o más responsables ya están asignados para esta fecha.');
       throw new Error(error.message);
     }
-    return enriquecerConPerfiles(created ?? []);
+    return (created ?? []) as unknown as ResponsableProgramacion[];
   },
 
   async toggleNotificado(id: string, notificado: boolean): Promise<void> {
