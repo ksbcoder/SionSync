@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
+import { RequireRole } from './components/auth/RequireRole';
 import { DotLoader } from './components/ui/DotLoader';
 import { useCanciones } from './hooks/useCanciones';
 import type { Cancion } from './domain';
@@ -30,7 +31,7 @@ function CancionEditWrapper() {
 
   useEffect(() => {
     if (id) getCancion(id).then(setCancion);
-  }, [id]);
+  }, [id, getCancion]);
 
   if (!cancion) return null;
   return <CancionForm cancionExistente={cancion} />;
@@ -51,9 +52,9 @@ export function AppRoutes() {
 
         <Route path="/programacion" element={<ProgramacionHome />} />
 
-        <Route path="/administracion" element={<AdminHome />} />
-        <Route path="/administracion/usuarios" element={<UsuarioList />} />
-        <Route path="/administracion/tipos-programacion" element={<TiposProgramacionList />} />
+        <Route path="/administracion" element={<RequireRole check={r => r.isAdmin}><AdminHome /></RequireRole>} />
+        <Route path="/administracion/usuarios" element={<RequireRole check={r => r.isAdmin}><UsuarioList /></RequireRole>} />
+        <Route path="/administracion/tipos-programacion" element={<RequireRole check={r => r.canGestionarTiposProgramacion}><TiposProgramacionList /></RequireRole>} />
       </Routes>
     </Suspense>
   );
