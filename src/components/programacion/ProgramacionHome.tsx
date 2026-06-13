@@ -5,6 +5,8 @@ import { useRoles } from '../../hooks/useRoles';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { useProgramaciones, useResponsables } from '../../hooks/useProgramaciones';
+import { useRealtime } from '../../hooks/useRealtime';
+import { useRecargarAlVolver } from '../../hooks/useRecargarAlVolver';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { DotLoader } from '../ui/DotLoader';
 import { EmptyState } from '../ui/EmptyState';
@@ -108,6 +110,16 @@ export function ProgramacionHome() {
 
   useEffect(() => { cargarProgramaciones(); }, [cargarProgramaciones]);
   useEffect(() => { cargarSemana(); }, [cargarSemana]);
+
+  const recargarTodo = useCallback(() => {
+    cargarProgramaciones();
+    cargarSemana();
+  }, [cargarProgramaciones, cargarSemana]);
+
+  // En vivo: si otro dispositivo cambia algo, esta pantalla se actualiza sola.
+  useRealtime(['programaciones', 'responsables_programacion', 'tipos_programacion'], recargarTodo);
+  // Red de seguridad: recargar al volver a la app tras un rato en segundo plano.
+  useRecargarAlVolver(recargarTodo);
 
   const mostrandoInactivas = canGestionarProgramacion && verInactivas;
   const filtradas = todasProgramaciones.filter(p => p.activo === !mostrandoInactivas);
@@ -380,7 +392,7 @@ export function ProgramacionHome() {
       {canGestionarProgramacion && !mostrandoInactivas && (
         <button
           onClick={() => setCrearOpen(true)}
-          className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
+          className="fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
           style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
           aria-label="Nueva programación"
         >

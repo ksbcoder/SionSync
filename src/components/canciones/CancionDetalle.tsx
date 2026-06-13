@@ -132,8 +132,8 @@ export function CancionDetalle() {
       {canEdit && (
         <button
           onClick={() => setAddSeccionOpen(true)}
-          className="md:hidden fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
-          style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom) + 0.75rem)' }}
+          className="fixed right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
+          style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
           aria-label="Agregar sección"
         >
           <Plus className="w-6 h-6" />
