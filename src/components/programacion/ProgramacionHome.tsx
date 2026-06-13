@@ -71,7 +71,9 @@ export function ProgramacionHome() {
     const progPorId = new Map(todasProgramaciones.map(p => [p.id, p]));
     const m = new Map<string, string[]>();
     for (const r of responsablesSemana) {
-      const color = progPorId.get(r.programacion_id)?.tipos_programacion?.color;
+      const prog = progPorId.get(r.programacion_id);
+      if (!prog?.activo) continue;
+      const color = prog.tipos_programacion?.color;
       if (!color) continue;
       const arr = m.get(r.fecha) ?? [];
       if (!arr.includes(color)) arr.push(color);
@@ -148,6 +150,7 @@ export function ProgramacionHome() {
     setMenuProg(null);
     if (ok) {
       await cargarProgramaciones();
+      if (nuevoEstado) setVerInactivas(false);
       showToast(nuevoEstado ? 'Programación reactivada' : 'Programación desactivada', 'success');
     }
   };
@@ -158,18 +161,15 @@ export function ProgramacionHome() {
     setCreadorNombre(null);
     setModificadorNombre(null);
 
-    const mismoUsuario = prog.updated_by === prog.user_id;
     try {
-      const creador = await usuarioRepository.getProfile(prog.user_id);
-      setCreadorNombre(creador.display_name);
-      if (mismoUsuario) setModificadorNombre(creador.display_name);
-    } catch { setCreadorNombre(null); }
-
-    if (!mismoUsuario) {
-      try {
-        const modificador = await usuarioRepository.getProfile(prog.updated_by);
-        setModificadorNombre(modificador.display_name);
-      } catch { setModificadorNombre(null); }
+      const ids = [...new Set([prog.user_id, prog.updated_by])];
+      const perfiles = await usuarioRepository.getProfilesByIds(ids);
+      const porId = new Map(perfiles.map(p => [p.id, p.display_name]));
+      setCreadorNombre(porId.get(prog.user_id) ?? 'No disponible');
+      setModificadorNombre(porId.get(prog.updated_by) ?? 'No disponible');
+    } catch {
+      setCreadorNombre('No disponible');
+      setModificadorNombre('No disponible');
     }
   };
 

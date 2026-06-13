@@ -12,6 +12,15 @@ export const usuarioRepository = {
     return data;
   },
 
+  async getProfilesByIds(userIds: string[]): Promise<Profile[]> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', userIds);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
+
   async getRolesByUser(userId: string): Promise<RoleName[]> {
     const { data, error } = await supabase
       .from('user_roles')
