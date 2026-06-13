@@ -18,6 +18,19 @@ export const APPLICATION_SERVER_KEY = VAPID_PUBLIC_KEY
   ? urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
   : undefined;
 
+// "Carné" único de ESTE navegador. Se genera una sola vez y se guarda
+// localmente; identifica al dispositivo aunque su endpoint (dirección de
+// Push) cambie, para no acumular suscripciones duplicadas.
+const DEVICE_ID_KEY = 'sionsync_device_id';
+function obtenerDeviceId(): string {
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(DEVICE_ID_KEY, id);
+  }
+  return id;
+}
+
 export const pushRepository = {
   /**
    * Guarda (o actualiza) la suscripción de este dispositivo en la base.
@@ -26,27 +39,37 @@ export const pushRepository = {
   async guardarSuscripcion(sub: PushSubscription): Promise<void> {
     const user_id = await getUserId();
     const json = sub.toJSON();
+    // Conflicto sobre (user_id, device_id): si este mismo dispositivo ya
+    // tenía una fila, se ACTUALIZA (nuevo endpoint y claves) en vez de crear
+    // una nueva. Así nunca quedan duplicados aunque el endpoint rote.
     const { error } = await supabase
       .from('push_subscriptions')
       .upsert(
         {
           user_id,
+          device_id: obtenerDeviceId(),
           endpoint: sub.endpoint,
           p256dh: json.keys?.p256dh ?? '',
           auth: json.keys?.auth ?? '',
           user_agent: navigator.userAgent,
         },
-        { onConflict: 'endpoint' },
+        { onConflict: 'user_id,device_id' },
       );
     if (error) throw new Error(error.message);
   },
 
-  /** Borra la suscripción de este dispositivo (al desactivar las notificaciones). */
-  async eliminarSuscripcion(endpoint: string): Promise<void> {
+  /**
+   * Borra la suscripción de ESTE dispositivo (al desactivar las
+   * notificaciones). Usa el carné del navegador, así que funciona aunque el
+   * navegador ya no entregue la suscripción y no deja la fila huérfana.
+   */
+  async eliminarSuscripcion(): Promise<void> {
+    const user_id = await getUserId();
     const { error } = await supabase
       .from('push_subscriptions')
       .delete()
-      .eq('endpoint', endpoint);
+      .eq('user_id', user_id)
+      .eq('device_id', obtenerDeviceId());
     if (error) throw new Error(error.message);
   },
 };
