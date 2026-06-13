@@ -59,6 +59,23 @@ export const pushRepository = {
   },
 
   /**
+   * ¿Este usuario ya tiene una suscripción guardada para ESTE dispositivo?
+   * Es la fuente de verdad (la base de datos) para decidir si ofrecerle
+   * activar las notificaciones, en vez de fiarnos de una marca local.
+   */
+  async tieneSuscripcionEnEsteDispositivo(): Promise<boolean> {
+    const user_id = await getUserId();
+    const { data, error } = await supabase
+      .from('push_subscriptions')
+      .select('id')
+      .eq('user_id', user_id)
+      .eq('device_id', obtenerDeviceId())
+      .limit(1);
+    if (error) throw new Error(error.message);
+    return (data?.length ?? 0) > 0;
+  },
+
+  /**
    * Borra la suscripción de ESTE dispositivo (al desactivar las
    * notificaciones). Usa el carné del navegador, así que funciona aunque el
    * navegador ya no entregue la suscripción y no deja la fila huérfana.

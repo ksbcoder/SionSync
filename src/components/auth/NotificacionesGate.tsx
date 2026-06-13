@@ -1,38 +1,41 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { Music2, Bell } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
+import { pushRepository } from '../../infrastructure/push.repository';
 import { DotLoader } from '../ui/DotLoader';
 
-// Marca que a ESTE usuario ya se le ofreció activar las notificaciones en ESTE
-// dispositivo. La clave incluye el id del usuario para que, en un equipo
-// compartido, a cada persona se le ofrezca una vez (no una sola vez por equipo).
-const promptKey = (userId: string) => `sionsync_notif_onboarding:${userId}`;
-
 /**
- * Tras aceptar el consentimiento, ofrece UNA sola vez activar las
- * notificaciones en este dispositivo, sin importar el rol del usuario. Si las
- * acepta o las pospone, no se vuelve a preguntar (puede activarlas luego
- * desde su perfil).
+ * Tras aceptar el consentimiento, ofrece activar las notificaciones en este
+ * dispositivo si —según la base de datos— este usuario aún no tiene una
+ * suscripción guardada para este equipo. Consultar la base (y no una marca
+ * local) hace la decisión más fiable: refleja el estado real del sistema.
+ *
+ * Si las activa o las pospone, no se vuelve a preguntar durante esta sesión.
+ * En un próximo inicio, si sigue sin suscripción, se le volverá a ofrecer.
  */
 export function NotificacionesGate({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { estado, procesando, activar } = usePushNotifications();
-  const [yaOfrecido, setYaOfrecido] = useState(
-    () => !!user && localStorage.getItem(promptKey(user.id)) === '1',
-  );
+  const [tieneSuscripcion, setTieneSuscripcion] = useState<boolean | null>(null);
+  const [pospuesto, setPospuesto] = useState(false);
 
-  const marcarOfrecido = () => {
-    if (user) localStorage.setItem(promptKey(user.id), '1');
-    setYaOfrecido(true);
-  };
+  useEffect(() => {
+    if (!user) return;
+    let cancelado = false;
+    pushRepository
+      .tieneSuscripcionEnEsteDispositivo()
+      .then(existe => { if (!cancelado) setTieneSuscripcion(existe); })
+      // Ante una falla (red, etc.) asumimos que sí tiene, para no molestar.
+      .catch(() => { if (!cancelado) setTieneSuscripcion(true); });
+    return () => { cancelado = true; };
+  }, [user]);
 
-  // Camino rápido: sin usuario, o si ya se le ofreció a este usuario en este
-  // dispositivo, no interrumpimos.
-  if (!user || yaOfrecido) return <>{children}</>;
+  // Sin usuario, o si ya lo pospuso/activó en esta sesión, no interrumpimos.
+  if (!user || pospuesto) return <>{children}</>;
 
-  // Esperamos a conocer el estado de las notificaciones.
-  if (estado === 'cargando') {
+  // Esperamos la respuesta de la base de datos y el estado del navegador.
+  if (tieneSuscripcion === null || estado === 'cargando') {
     return (
       <div className="min-h-svh bg-app flex items-center justify-center">
         <DotLoader />
@@ -40,10 +43,11 @@ export function NotificacionesGate({ children }: { children: ReactNode }) {
     );
   }
 
-  // Ofrecemos solo cuando tiene sentido: el dispositivo puede recibir avisos
-  // y aún no los tiene activos. En cualquier otro caso (ya activas, no
-  // soportado, bloqueadas) dejamos pasar sin preguntar.
-  if (estado !== 'inactivo') return <>{children}</>;
+  // Ya está suscrito en este dispositivo (según la base), o el navegador no
+  // puede ofrecerlo (no soportado o bloqueado): seguimos sin preguntar.
+  if (tieneSuscripcion || estado === 'no-soportado' || estado === 'denegado') {
+    return <>{children}</>;
+  }
 
   const handleActivar = async () => {
     try {
@@ -51,7 +55,7 @@ export function NotificacionesGate({ children }: { children: ReactNode }) {
     } catch {
       // Si algo falla, seguimos igual; puede reintentar desde su perfil.
     } finally {
-      marcarOfrecido();
+      setPospuesto(true);
     }
   };
 
@@ -84,7 +88,7 @@ export function NotificacionesGate({ children }: { children: ReactNode }) {
           </button>
 
           <button
-            onClick={marcarOfrecido}
+            onClick={() => setPospuesto(true)}
             disabled={procesando}
             className="w-full text-slate-400 hover:text-slate-600 py-2 text-sm transition-colors disabled:opacity-50"
           >
