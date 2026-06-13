@@ -1,35 +1,38 @@
 import { useState, type ReactNode } from 'react';
 import { Music2, Bell } from 'lucide-react';
-import { useRoles } from '../../hooks/useRoles';
+import { useAuth } from '../../hooks/useAuth';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { DotLoader } from '../ui/DotLoader';
 
-// Marca, por dispositivo, que ya se le ofreció activar las notificaciones al
-// entrar. Así no se vuelve a interrumpir al usuario en cada inicio de sesión.
-const PROMPT_KEY = 'sionsync_notif_onboarding';
+// Marca que a ESTE usuario ya se le ofreció activar las notificaciones en ESTE
+// dispositivo. La clave incluye el id del usuario para que, en un equipo
+// compartido, a cada persona se le ofrezca una vez (no una sola vez por equipo).
+const promptKey = (userId: string) => `sionsync_notif_onboarding:${userId}`;
 
 /**
- * Tras aceptar el consentimiento y teniendo ya un rol, ofrece UNA sola vez
- * activar las notificaciones en este dispositivo. Si las acepta o las pospone,
- * no se vuelve a preguntar (puede activarlas luego desde su perfil).
+ * Tras aceptar el consentimiento, ofrece UNA sola vez activar las
+ * notificaciones en este dispositivo, sin importar el rol del usuario. Si las
+ * acepta o las pospone, no se vuelve a preguntar (puede activarlas luego
+ * desde su perfil).
  */
 export function NotificacionesGate({ children }: { children: ReactNode }) {
-  const { isMiembroNuevo, loading: rolesLoading } = useRoles();
+  const { user } = useAuth();
   const { estado, procesando, activar } = usePushNotifications();
   const [yaOfrecido, setYaOfrecido] = useState(
-    () => localStorage.getItem(PROMPT_KEY) === '1',
+    () => !!user && localStorage.getItem(promptKey(user.id)) === '1',
   );
 
   const marcarOfrecido = () => {
-    localStorage.setItem(PROMPT_KEY, '1');
+    if (user) localStorage.setItem(promptKey(user.id), '1');
     setYaOfrecido(true);
   };
 
-  // Camino rápido: si ya se ofreció en este dispositivo, no interrumpimos.
-  if (yaOfrecido) return <>{children}</>;
+  // Camino rápido: sin usuario, o si ya se le ofreció a este usuario en este
+  // dispositivo, no interrumpimos.
+  if (!user || yaOfrecido) return <>{children}</>;
 
-  // Esperamos a conocer el rol y el estado de las notificaciones.
-  if (rolesLoading || estado === 'cargando') {
+  // Esperamos a conocer el estado de las notificaciones.
+  if (estado === 'cargando') {
     return (
       <div className="min-h-svh bg-app flex items-center justify-center">
         <DotLoader />
@@ -37,11 +40,10 @@ export function NotificacionesGate({ children }: { children: ReactNode }) {
     );
   }
 
-  // Solo ofrecemos a quien ya tiene un rol (tiene responsabilidades que
-  // recordar) y cuyo dispositivo puede recibir avisos y aún no los tiene.
-  // En cualquier otro caso (sin rol, ya activas, no soportado, bloqueadas)
-  // dejamos pasar sin preguntar.
-  if (isMiembroNuevo || estado !== 'inactivo') return <>{children}</>;
+  // Ofrecemos solo cuando tiene sentido: el dispositivo puede recibir avisos
+  // y aún no los tiene activos. En cualquier otro caso (ya activas, no
+  // soportado, bloqueadas) dejamos pasar sin preguntar.
+  if (estado !== 'inactivo') return <>{children}</>;
 
   const handleActivar = async () => {
     try {
