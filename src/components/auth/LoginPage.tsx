@@ -54,22 +54,20 @@ export function LoginPage() {
   const [errorInfo, setErrorInfo] = useState<ErrorInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [aceptaPolitica, setAceptaPolitica] = useState(false);
-  const [showPolitica, setShowPolitica] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showPolitica, setShowPolitica] = useState(false);
 
   const switchToLogin = () => { setIsRegister(false); setErrorInfo(null); setSuccessMsg(null); };
   const switchToRegister = () => { setIsRegister(true); setErrorInfo(null); setSuccessMsg(null); };
+
+  if (showPolitica) {
+    return <PoliticaDatos onBack={() => setShowPolitica(false)} />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorInfo(null);
     setSuccessMsg(null);
-
-    if (isRegister && !aceptaPolitica) {
-      setErrorInfo({ message: 'Debes aceptar la política de tratamiento de datos para registrarte.' });
-      return;
-    }
 
     setLoading(true);
     try {
@@ -86,18 +84,6 @@ export function LoginPage() {
       setLoading(false);
     }
   };
-
-  const handleGoogleSignIn = () => {
-    if (isRegister && !aceptaPolitica) {
-      setErrorInfo({ message: 'Debes aceptar la política de tratamiento de datos para registrarte.' });
-      return;
-    }
-    signInWithGoogle();
-  };
-
-  if (showPolitica) {
-    return <PoliticaDatos onBack={() => setShowPolitica(false)} />;
-  }
 
   return (
     <div className="min-h-svh bg-app flex flex-col items-center justify-center px-4">
@@ -161,27 +147,6 @@ export function LoginPage() {
               </button>
             </div>
 
-            {isRegister && (
-              <label className="flex items-start gap-2 text-xs text-slate-500 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={aceptaPolitica}
-                  onChange={e => setAceptaPolitica(e.target.checked)}
-                  className="mt-0.5 accent-brand-700"
-                />
-                <span>
-                  Acepto la{' '}
-                  <button
-                    type="button"
-                    onClick={() => setShowPolitica(true)}
-                    className="text-brand-700 font-medium hover:underline"
-                  >
-                    Política de Tratamiento de Datos Personales
-                  </button>
-                </span>
-              </label>
-            )}
-
             <button
               type="submit"
               disabled={loading}
@@ -189,6 +154,20 @@ export function LoginPage() {
             >
               {loading ? 'Cargando...' : isRegister ? 'Registrarse' : 'Entrar'}
             </button>
+
+            {isRegister && (
+              <p className="text-xs text-slate-400 text-center leading-relaxed">
+                Al registrarte, aceptas nuestra{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowPolitica(true)}
+                  className="text-brand-700 font-medium hover:underline"
+                >
+                  Política de Tratamiento de Datos Personales
+                </button>
+                .
+              </p>
+            )}
           </form>
 
           <div className="relative my-5">
@@ -201,7 +180,7 @@ export function LoginPage() {
           </div>
 
           <button
-            onClick={handleGoogleSignIn}
+            onClick={signInWithGoogle}
             className="w-full flex items-center justify-center gap-3 border border-gray-200 py-3 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-slate-700"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
