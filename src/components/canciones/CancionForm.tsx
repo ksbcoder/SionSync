@@ -29,11 +29,20 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
 
   const handleSubmit = async () => {
     if (!titulo.trim()) return;
+
+    // El min/max del campo solo controla las flechitas; validamos el rango aquí
+    // para que no se guarde un BPM imposible (escrito o pegado a mano).
+    const tempoNum = tempo.trim() ? parseInt(tempo, 10) : null;
+    if (tempoNum !== null && (isNaN(tempoNum) || tempoNum < 40 || tempoNum > 300)) {
+      showToast('El tempo debe estar entre 40 y 300 BPM', 'error');
+      return;
+    }
+
     const data = {
       titulo: titulo.trim(),
       autor: autor.trim() || null,
       tonalidad: tonalidad || null,
-      tempo: tempo ? parseInt(tempo) : null,
+      tempo: tempoNum,
     };
     if (id && cancionExistente) {
       const updated = await updateCancion(id, data);

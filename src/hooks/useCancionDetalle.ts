@@ -37,15 +37,20 @@ export function useCancionDetalle(id: string | undefined) {
     await cargar();
   }, [id, cancion, addSeccion, cargar]);
 
+  // Aplica el cambio en pantalla al instante; si el servidor falla, revierte.
   const editarSeccion = useCallback(async (seccionId: string, data: { tipo: TipoSeccion; letra: string }) => {
-    await updateSeccion(seccionId, data);
-    await cargar();
-  }, [updateSeccion, cargar]);
+    const previo = cancion;
+    setCancion(c => c ? { ...c, secciones: c.secciones?.map(s => s.id === seccionId ? { ...s, ...data } : s) } : c);
+    const ok = await updateSeccion(seccionId, data);
+    if (!ok) setCancion(previo);
+  }, [cancion, updateSeccion]);
 
   const eliminarSeccion = useCallback(async (seccionId: string) => {
-    await deleteSeccion(seccionId);
-    await cargar();
-  }, [deleteSeccion, cargar]);
+    const previo = cancion;
+    setCancion(c => c ? { ...c, secciones: c.secciones?.filter(s => s.id !== seccionId) } : c);
+    const ok = await deleteSeccion(seccionId);
+    if (!ok) setCancion(previo);
+  }, [cancion, deleteSeccion]);
 
   const moverSeccion = useCallback(async (seccionId: string, direccion: 'arriba' | 'abajo') => {
     const sorted = [...(cancion?.secciones ?? [])].sort((a, b) => a.orden - b.orden);
@@ -58,9 +63,13 @@ export function useCancionDetalle(id: string | undefined) {
       if (i === swapIdx) return { id: s.id, orden: sorted[idx].orden };
       return { id: s.id, orden: s.orden };
     });
-    await reordenarSecciones(newOrdenes);
-    await cargar();
-  }, [cancion, reordenarSecciones, cargar]);
+
+    const ordenPorId = new Map(newOrdenes.map(o => [o.id, o.orden]));
+    const previo = cancion;
+    setCancion(c => c ? { ...c, secciones: c.secciones?.map(s => ({ ...s, orden: ordenPorId.get(s.id) ?? s.orden })) } : c);
+    const ok = await reordenarSecciones(newOrdenes);
+    if (!ok) setCancion(previo);
+  }, [cancion, reordenarSecciones]);
 
   const duplicar = useCallback(async (seccionId: string) => {
     if (!cancion) return;
@@ -79,14 +88,30 @@ export function useCancionDetalle(id: string | undefined) {
   }, [cancion, addNota, cargar]);
 
   const editarNota = useCallback(async (notaId: string, contenido: string) => {
-    await updateNota(notaId, contenido);
-    await cargar();
-  }, [updateNota, cargar]);
+    const previo = cancion;
+    setCancion(c => c ? {
+      ...c,
+      secciones: c.secciones?.map(s => ({
+        ...s,
+        notas: s.notas?.map(n => n.id === notaId ? { ...n, contenido } : n),
+      })),
+    } : c);
+    const ok = await updateNota(notaId, contenido);
+    if (!ok) setCancion(previo);
+  }, [cancion, updateNota]);
 
   const eliminarNota = useCallback(async (notaId: string) => {
-    await deleteNota(notaId);
-    await cargar();
-  }, [deleteNota, cargar]);
+    const previo = cancion;
+    setCancion(c => c ? {
+      ...c,
+      secciones: c.secciones?.map(s => ({
+        ...s,
+        notas: s.notas?.filter(n => n.id !== notaId),
+      })),
+    } : c);
+    const ok = await deleteNota(notaId);
+    if (!ok) setCancion(previo);
+  }, [cancion, deleteNota]);
 
   return {
     cancion,

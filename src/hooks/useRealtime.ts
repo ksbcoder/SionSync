@@ -27,7 +27,10 @@ export function useRealtime(tablas: string[], onCambio: () => void) {
       temporizador = setTimeout(() => callbackRef.current(), 250);
     };
 
-    const canal = supabase.channel(`realtime-${clave}`);
+    // Un nombre único por suscripción (no solo por tablas): si dos pantallas
+    // escuchan las mismas tablas a la vez, cada una tiene su propio canal y no
+    // se pisan entre sí.
+    const canal = supabase.channel(`realtime-${clave}-${crypto.randomUUID()}`);
     for (const tabla of clave.split(',')) {
       canal.on('postgres_changes', { event: '*', schema: 'public', table: tabla }, recargarAgrupado);
     }
