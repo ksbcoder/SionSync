@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, MoreVertical, Plus, Presentation, Trash2 } from 'lucide-react';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useCancionDetalle } from '../../hooks/useCancionDetalle';
@@ -15,6 +15,11 @@ import { DotLoader } from '../ui/DotLoader';
 export function CancionDetalle() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Si llegamos desde una sesión (al crear una canción nueva), volver regresa a
+  // esa sesión en vez de al catálogo.
+  const sesionOrigen = searchParams.get('sesion');
+  const rutaVolver = sesionOrigen ? `/sesion/${sesionOrigen}` : '/canciones';
   const {
     cancion, loading, secciones,
     eliminarCancion, agregarSeccion, editarSeccion,
@@ -73,7 +78,7 @@ export function CancionDetalle() {
   return (
     <div className="min-h-svh bg-gray-50">
       <header className="sticky top-0 bg-white border-b border-gray-200 flex items-center gap-2 px-4 py-3 z-10">
-        <button onClick={() => navigate('/canciones')} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-xl">
+        <button onClick={() => navigate(rutaVolver)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-xl">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="flex-1 text-lg font-semibold text-gray-800 truncate">{cancion.titulo}</h1>

@@ -50,7 +50,9 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
           const orden = calcularSiguienteOrden(sesion?.canciones ?? []);
           await agregarCancion(sesionId, created.id, orden);
           showToast('Canción creada y agregada a la sesión', 'success');
-          navigate(`/sesion/${sesionId}`);
+          // Vamos al detalle de la canción para agregarle secciones; el botón de
+          // volver de esa pantalla regresará a la sesión (lleva el ?sesion=).
+          navigate(`/cancion/${created.id}?sesion=${sesionId}`);
         } else {
           showToast('Canción creada', 'success');
           navigate(`/cancion/${created.id}`);
