@@ -15,14 +15,12 @@ const iconBtn = 'min-h-[40px] min-w-[40px] flex items-center justify-center roun
 /**
  * Pone en mayúscula la nota inicial de cada acorde, conservando el resto tal
  * como se escribió (así la 'm' de menor sigue en minúscula: 'am - f#m' → 'Am - F#m').
- * Los acordes van separados por espacios, así que basta con capitalizar la
- * primera letra de cada bloque.
+ * Capitaliza la primera letra de cada bloque sin importar el separador (espacio,
+ * guion o coma), por lo que también funciona al pegar acordes pegados: 'am-f-c'
+ * → 'Am-F-C'.
  */
 function mayusculaNota(texto: string): string {
-  return texto
-    .split(' ')
-    .map(token => (token ? token.charAt(0).toUpperCase() + token.slice(1) : token))
-    .join(' ');
+  return texto.replace(/(^|[\s\-—–,])([a-z])/g, (_, sep, letra) => sep + letra.toUpperCase());
 }
 
 export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFormProps) {
@@ -37,20 +35,28 @@ export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFo
     setNuevo('');
   };
 
-  const handleNuevoKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  // Al pulsar espacio insertamos ' - ' (el separador entre acordes) en la
+  // posición del cursor; con Enter se confirma. Lo comparten el campo de
+  // agregar y el de editar, para que ambos se comporten igual.
+  const handleAcordeKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    valor: string,
+    setValor: (v: string) => void,
+    onEnter: () => void,
+  ) => {
     if (e.key === ' ') {
       e.preventDefault();
       const input = e.currentTarget;
-      const start = input.selectionStart ?? nuevo.length;
-      const end = input.selectionEnd ?? nuevo.length;
+      const start = input.selectionStart ?? valor.length;
+      const end = input.selectionEnd ?? valor.length;
       const insertion = ' - ';
-      const newValue = nuevo.slice(0, start) + insertion + nuevo.slice(end);
-      setNuevo(newValue);
+      const newValue = valor.slice(0, start) + insertion + valor.slice(end);
+      setValor(newValue);
       requestAnimationFrame(() => {
         input.setSelectionRange(start + insertion.length, start + insertion.length);
       });
     } else if (e.key === 'Enter') {
-      handleAdd();
+      onEnter();
     }
   };
 
@@ -75,7 +81,7 @@ export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFo
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-base font-mono focus:outline-none focus:border-gray-500"
                 value={editValor}
                 onChange={e => setEditValor(mayusculaNota(e.target.value))}
-                onKeyDown={e => e.key === 'Enter' && handleUpdate(nota.id)}
+                onKeyDown={e => handleAcordeKeyDown(e, editValor, setEditValor, () => handleUpdate(nota.id))}
                 autoFocus
               />
               <button onClick={() => handleUpdate(nota.id)} className={`${iconBtn} text-green-600 hover:bg-green-50`}>
@@ -125,7 +131,7 @@ export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFo
             placeholder="Ej: Am - F - C - G"
             value={nuevo}
             onChange={e => setNuevo(mayusculaNota(e.target.value))}
-            onKeyDown={handleNuevoKeyDown}
+            onKeyDown={e => handleAcordeKeyDown(e, nuevo, setNuevo, handleAdd)}
           />
           <button
             onClick={handleAdd}

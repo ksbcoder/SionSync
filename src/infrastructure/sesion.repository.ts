@@ -85,11 +85,9 @@ export const sesionRepository = {
   },
 
   async reordenar(ordenes: { id: string; orden: number }[]): Promise<void> {
-    const updates = ordenes.map(({ id, orden }) =>
-      supabase.from('sesion_canciones').update({ orden }).eq('id', id)
-    );
-    const results = await Promise.all(updates);
-    const failed = results.find(r => r.error);
-    if (failed?.error) throw new Error(failed.error.message);
+    // Toda la numeración en una sola llamada atómica (función en la base):
+    // o se aplican todos los cambios o ninguno, nunca queda a medias.
+    const { error } = await supabase.rpc('reordenar_sesion_canciones', { ordenes });
+    if (error) throw new Error(error.message);
   },
 };

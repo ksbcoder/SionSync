@@ -18,6 +18,7 @@ interface SwipeableCardProps {
 
 export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: SwipeableCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
   const startY = useRef(0);
   const baseOffset = useRef(0);
@@ -62,59 +63,77 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
     };
   }, [offset]);
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    startX.current = e.touches[0].clientX;
-    startY.current = e.touches[0].clientY;
-    baseOffset.current = currentOffset.current;
-    dragging.current = true;
-    decided.current = null;
-    setAnimating(false);
-  };
+  // Gestos con listeners nativos: el touchmove debe ser NO pasivo para poder
+  // bloquear el scroll vertical mientras se desliza en horizontal. React monta
+  // sus listeners de touch como pasivos, donde preventDefault no tiene efecto
+  // (y avisa por consola); por eso los registramos a mano sobre el elemento.
+  useEffect(() => {
+    const el = dragRef.current;
+    if (!el) return;
 
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (!dragging.current) return;
-    const dx = e.touches[0].clientX - startX.current;
-    const dy = e.touches[0].clientY - startY.current;
-
-    if (!decided.current) {
-      if (Math.abs(dx) > DEAD_ZONE || Math.abs(dy) > DEAD_ZONE) {
-        decided.current = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
-      }
-      return;
-    }
-
-    if (decided.current === 'v') return;
-
-    e.preventDefault(); // Bloquear scroll vertical mientras se desliza horizontalmente
-
-    const val = Math.max(-panelWidth, Math.min(0, baseOffset.current + dx));
-    currentOffset.current = val;
-
-    // Fijar abierto solo si estaba cerrada y pasó el umbral
-    if (val <= -SNAP_THRESHOLD && baseOffset.current === 0) {
-      dragging.current = false;
+    const onTouchStart = (e: TouchEvent) => {
+      startX.current = e.touches[0].clientX;
+      startY.current = e.touches[0].clientY;
+      baseOffset.current = currentOffset.current;
+      dragging.current = true;
       decided.current = null;
-      currentOffset.current = -panelWidth;
-      setAnimating(true);
-      setOffset(-panelWidth);
-      return;
-    }
+      setAnimating(false);
+    };
 
-    setOffset(val);
-  };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!dragging.current) return;
+      const dx = e.touches[0].clientX - startX.current;
+      const dy = e.touches[0].clientY - startY.current;
 
-  const onTouchEnd = () => {
-    dragging.current = false;
+      if (!decided.current) {
+        if (Math.abs(dx) > DEAD_ZONE || Math.abs(dy) > DEAD_ZONE) {
+          decided.current = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+        }
+        return;
+      }
 
-    if (decided.current === 'h' || baseOffset.current !== 0) {
-      // Cualquier gesto horizontal o tap en card abierta → cerrar
-      setAnimating(true);
-      currentOffset.current = 0;
-      setOffset(0);
-    }
+      if (decided.current === 'v') return;
 
-    decided.current = null;
-  };
+      e.preventDefault(); // Bloquear scroll vertical mientras se desliza horizontalmente
+
+      const val = Math.max(-panelWidth, Math.min(0, baseOffset.current + dx));
+      currentOffset.current = val;
+
+      // Fijar abierto solo si estaba cerrada y pasó el umbral
+      if (val <= -SNAP_THRESHOLD && baseOffset.current === 0) {
+        dragging.current = false;
+        decided.current = null;
+        currentOffset.current = -panelWidth;
+        setAnimating(true);
+        setOffset(-panelWidth);
+        return;
+      }
+
+      setOffset(val);
+    };
+
+    const onTouchEnd = () => {
+      dragging.current = false;
+
+      if (decided.current === 'h' || baseOffset.current !== 0) {
+        // Cualquier gesto horizontal o tap en card abierta → cerrar
+        setAnimating(true);
+        currentOffset.current = 0;
+        setOffset(0);
+      }
+
+      decided.current = null;
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [panelWidth]);
 
   return (
     <div ref={cardRef} className={`relative overflow-hidden ${className}`}>
@@ -130,11 +149,9 @@ export function SwipeableCard({ children, actions, className = 'rounded-2xl' }: 
         ))}
       </div>
       <div
+        ref={dragRef}
         className={`relative ${animating ? 'transition-transform duration-200' : ''}`}
         style={{ transform: `translateX(${offset}px)`, touchAction: 'pan-y' }}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
       >
         {children}
       </div>

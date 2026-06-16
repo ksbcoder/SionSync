@@ -31,10 +31,5 @@ export function useCanciones() {
     [runVoid]
   );
 
-  const buscarCanciones = useCallback(
-    (query: string): Promise<Cancion[] | null> => run(() => cancionRepository.buscar(query)),
-    [run]
-  );
-
-  return { loading, error, getCanciones, getCancion, createCancion, updateCancion, deleteCancion, buscarCanciones };
+  return { loading, error, getCanciones, getCancion, createCancion, updateCancion, deleteCancion };
 }

@@ -50,14 +50,4 @@ export const cancionRepository = {
     const { error } = await supabase.from('canciones').delete().eq('id', id);
     if (error) throw new Error(error.message);
   },
-
-  async buscar(query: string): Promise<Cancion[]> {
-    const { data, error } = await supabase
-      .from('canciones')
-      .select('*')
-      .ilike('titulo', `%${query}%`)
-      .order('updated_at', { ascending: false });
-    if (error) throw new Error(error.message);
-    return data ?? [];
-  },
 };
