@@ -11,6 +11,9 @@ const CancionList = lazy(() => import('./components/canciones/CancionList').then
 const CancionForm = lazy(() => import('./components/canciones/CancionForm').then(m => ({ default: m.CancionForm })));
 const CancionDetalle = lazy(() => import('./components/canciones/CancionDetalle').then(m => ({ default: m.CancionDetalle })));
 const CancionPresentacion = lazy(() => import('./components/canciones/CancionPresentacion').then(m => ({ default: m.CancionPresentacion })));
+const SesionList = lazy(() => import('./components/sesiones/SesionList').then(m => ({ default: m.SesionList })));
+const SesionDetalle = lazy(() => import('./components/sesiones/SesionDetalle').then(m => ({ default: m.SesionDetalle })));
+const SesionPresentacion = lazy(() => import('./components/sesiones/SesionPresentacion').then(m => ({ default: m.SesionPresentacion })));
 const AdminHome = lazy(() => import('./components/admin/AdminHome').then(m => ({ default: m.AdminHome })));
 const UsuarioList = lazy(() => import('./components/admin/UsuarioList').then(m => ({ default: m.UsuarioList })));
 const TiposProgramacionList = lazy(() => import('./components/admin/TiposProgramacionList').then(m => ({ default: m.TiposProgramacionList })));
@@ -49,6 +52,10 @@ export function AppRoutes() {
         <Route path="/cancion/:id" element={<Layout><CancionDetalle /></Layout>} />
         <Route path="/cancion/:id/editar" element={<Layout><CancionEditWrapper /></Layout>} />
         <Route path="/cancion/:id/presentacion" element={<CancionPresentacion />} />
+
+        <Route path="/canciones/sesiones" element={<Layout><SesionList /></Layout>} />
+        <Route path="/sesion/:id" element={<Layout><SesionDetalle /></Layout>} />
+        <Route path="/sesion/:id/presentacion" element={<SesionPresentacion />} />
 
         <Route path="/programacion" element={<ProgramacionHome />} />
 

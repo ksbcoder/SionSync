@@ -13,3 +13,5 @@ export { ROLES_INFO } from './usuario';
 
 export type { TipoProgramacion, Programacion, ProgramacionInsert, ResponsableProgramacion, ResponsableInsert } from './programacion';
 export { COLORES_TIPO_PROGRAMACION } from './programacion';
+
+export type { Sesion, SesionCancion, SesionConCanciones, SesionInsert } from './sesion';

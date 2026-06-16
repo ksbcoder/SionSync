@@ -7,6 +7,7 @@ import { useRecargarAlVolver } from '../../hooks/useRecargarAlVolver';
 import { useRoles } from '../../hooks/useRoles';
 import { useToast } from '../../hooks/useToast';
 import { CancionCard } from './CancionCard';
+import { TabsCanciones } from './TabsCanciones';
 import { DotLoader } from '../ui/DotLoader';
 import { EmptyState } from '../ui/EmptyState';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
@@ -67,7 +68,11 @@ export function CancionList() {
         <h1 className="flex-1 text-lg font-semibold text-gray-800">Canciones</h1>
       </header>
 
-      <div className="sticky top-[57px] bg-[#f8faff] px-4 pt-4 pb-2 z-20">
+      <div className="px-4 pt-3">
+        <TabsCanciones activa="catalogo" />
+      </div>
+
+      <div className="sticky top-[57px] bg-[#f8faff] px-4 pt-3 pb-2 z-20">
         <div className="relative max-w-2xl mx-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input

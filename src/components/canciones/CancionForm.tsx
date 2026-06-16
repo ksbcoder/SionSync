@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
+import { useSesiones } from '../../hooks/useSesiones';
 import { useToast } from '../../hooks/useToast';
 import { TouchButton } from '../ui/TouchButton';
-import { TONALIDADES } from '../../domain';
+import { TONALIDADES, calcularSiguienteOrden } from '../../domain';
 import type { Cancion } from '../../domain';
 
 interface CancionFormProps {
@@ -14,7 +15,11 @@ interface CancionFormProps {
 export function CancionForm({ cancionExistente }: CancionFormProps) {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  // Si venimos desde una sesión, al crear la canción se agrega a esa sesión.
+  const sesionId = searchParams.get('sesion');
   const { createCancion, updateCancion, loading } = useCanciones();
+  const { getSesion, agregarCancion } = useSesiones();
   const { showToast } = useToast();
 
   const [titulo, setTitulo] = useState(cancionExistente?.titulo ?? '');
@@ -39,8 +44,17 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
     } else {
       const created = await createCancion(data);
       if (created) {
-        showToast('Canción creada', 'success');
-        navigate(`/cancion/${created.id}`);
+        if (sesionId) {
+          // Queda en el catálogo y, además, se agrega al final de la sesión.
+          const sesion = await getSesion(sesionId);
+          const orden = calcularSiguienteOrden(sesion?.canciones ?? []);
+          await agregarCancion(sesionId, created.id, orden);
+          showToast('Canción creada y agregada a la sesión', 'success');
+          navigate(`/sesion/${sesionId}`);
+        } else {
+          showToast('Canción creada', 'success');
+          navigate(`/cancion/${created.id}`);
+        }
       }
     }
   };

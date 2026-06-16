@@ -37,9 +37,15 @@ function fechaLegible(iso: string): string {
   }).format(new Date(`${iso}T12:00:00Z`));
 }
 
+// Formas en que Supabase puede devolver el tipo de programación anidado:
+// como objeto único o, según la versión, dentro de un arreglo.
+type TipoProgramacion = { nombre?: string };
+type Programacion = { tipos_programacion?: TipoProgramacion | TipoProgramacion[] };
+type ResponsableConTipo = { programaciones?: Programacion | Programacion[] };
+
 // El nombre del tipo puede llegar como objeto anidado o, según la versión,
 // dentro de un arreglo. Normalizamos ambos casos.
-function nombreDelTipo(responsable: any): string {
+function nombreDelTipo(responsable: ResponsableConTipo): string {
   const prog = Array.isArray(responsable.programaciones)
     ? responsable.programaciones[0]
     : responsable.programaciones;
@@ -50,7 +56,7 @@ function nombreDelTipo(responsable: any): string {
 }
 
 Deno.serve(async (req) => {
-  let body: { fecha?: string; dias_antes?: number; forzar?: boolean } = {};
+  let body: { fecha?: string; dias_antes?: number; forzar?: boolean };
   try {
     body = await req.json();
   } catch {
