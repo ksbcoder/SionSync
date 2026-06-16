@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, UserPlus, Power, Info } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, UserPlus, Power, Info, Copy } from 'lucide-react';
 import { useRoles } from '../../hooks/useRoles';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
@@ -12,6 +12,7 @@ import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { BottomSheet } from '../layout/BottomSheet';
 import { AsignarResponsableSheet } from './AsignarResponsableSheet';
 import { CrearProgramacionSheet } from './CrearProgramacionSheet';
+import { DuplicarSemanaSheet } from './DuplicarSemanaSheet';
 import { SelectorSemana } from './SelectorSemana';
 import { TarjetaProgramacion } from './TarjetaProgramacion';
 import { formatFecha } from '../../domain';
@@ -40,6 +41,7 @@ export function ProgramacionHome() {
 
   const [verInactivas, setVerInactivas] = useState(false);
   const [crearOpen, setCrearOpen] = useState(false);
+  const [duplicarOpen, setDuplicarOpen] = useState(false);
   const [asignarPara, setAsignarPara] = useState<Programacion | null>(null);
   const [menuProg, setMenuProg] = useState<Programacion | null>(null);
 
@@ -63,6 +65,13 @@ export function ProgramacionHome() {
 
   const responsablesPorProg = (progId: string) =>
     responsables.filter(r => r.programacion_id === progId);
+
+  // Datos para duplicar la semana visible: el lunes (diasSemana[0] ya es el
+  // inicio de semana), los servicios activos y cuántas asignaciones tienen.
+  const semanaInicio = diasSemana[0];
+  const idsActivas = todasProgramaciones.filter(p => p.activo).map(p => p.id);
+  const idsActivasSet = new Set(idsActivas);
+  const asignacionesActivasSemana = responsablesSemana.filter(r => idsActivasSet.has(r.programacion_id)).length;
 
   const handleEliminarResp = async () => {
     if (!confirmEliminarResp) return;
@@ -152,6 +161,19 @@ export function ProgramacionHome() {
         coloresPorFecha={coloresPorFecha}
         onSeleccionar={setFecha}
       />
+
+      {canGestionarProgramacion && !mostrandoInactivas && (
+        <div className="px-4 max-w-lg mx-auto w-full">
+          <button
+            onClick={() => setDuplicarOpen(true)}
+            disabled={asignacionesActivasSemana === 0}
+            className="flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800 disabled:text-gray-300 disabled:cursor-not-allowed"
+          >
+            <Copy className="w-4 h-4" />
+            Duplicar esta semana
+          </button>
+        </div>
+      )}
 
       <main className="px-4 py-3 max-w-lg mx-auto flex flex-col gap-4">
         {loading ? (
@@ -313,6 +335,15 @@ export function ProgramacionHome() {
         onClose={() => setCrearOpen(false)}
         programacionesExistentes={todasProgramaciones}
         onCreada={cargarProgramaciones}
+      />
+
+      <DuplicarSemanaSheet
+        isOpen={duplicarOpen}
+        onClose={() => setDuplicarOpen(false)}
+        semanaOrigenInicio={semanaInicio}
+        cantidadAsignaciones={asignacionesActivasSemana}
+        programacionIdsActivas={idsActivas}
+        onDuplicado={cargarSemana}
       />
 
       {/* Confirmación: eliminar responsable */}

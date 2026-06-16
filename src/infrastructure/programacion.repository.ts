@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { getUserId } from './auth';
+import { sumarDias } from '../domain';
 import type { TipoProgramacion, Programacion, ProgramacionInsert, ResponsableProgramacion, ResponsableInsert } from '../domain';
 
 // Trae el responsable junto con su perfil (nombre) y el de quien asignó, en
@@ -169,5 +170,60 @@ export const responsableRepository = {
       .delete()
       .eq('id', id);
     if (error) throw new Error(error.message);
+  },
+
+  /**
+   * Copia todas las asignaciones de responsables de una semana (lunes a domingo)
+   * a otra semana, corriendo cada fecha la misma cantidad de días completos. Así
+   * cada responsable conserva su día de la semana (lunes sigue siendo lunes) sin
+   * importar cambios de mes o de año.
+   *
+   * - Solo copia asignaciones de las programaciones indicadas en `programacionIdsActivas`.
+   * - No pisa lo que ya exista en la semana destino: las repeticiones (misma
+   *   persona, mismo servicio, mismo día) se omiten.
+   * - El estado "notificado" arranca en false (lo pone la base por defecto) y
+   *   queda registrado que el usuario actual hizo la asignación (trigger en la base).
+   *
+   * `origenInicio` y `destinoInicio` deben ser los lunes de cada semana.
+   */
+  async copiarSemana(
+    origenInicio: string,
+    destinoInicio: string,
+    programacionIdsActivas: string[]
+  ): Promise<{ copiados: number; omitidos: number }> {
+    const origen = await this.getByRango(origenInicio, sumarDias(origenInicio, 6));
+    const destino = await this.getByRango(destinoInicio, sumarDias(destinoInicio, 6));
+
+    const activas = new Set(programacionIdsActivas);
+    const clave = (progId: string, userId: string, fecha: string) => `${progId}|${userId}|${fecha}`;
+    const yaExisten = new Set(destino.map(r => clave(r.programacion_id, r.user_id, r.fecha)));
+
+    // Diferencia en días completos entre dos fechas "YYYY-MM-DD". El mediodía
+    // evita sustos por horario de verano al restar milisegundos.
+    const diffDias = (a: string, b: string) =>
+      Math.round((new Date(a + 'T12:00:00').getTime() - new Date(b + 'T12:00:00').getTime()) / 86_400_000);
+
+    const aInsertar: ResponsableInsert[] = [];
+    let omitidos = 0;
+    for (const r of origen) {
+      if (!activas.has(r.programacion_id)) continue;
+      const nuevaFecha = sumarDias(destinoInicio, diffDias(r.fecha, origenInicio));
+      if (yaExisten.has(clave(r.programacion_id, r.user_id, nuevaFecha))) {
+        omitidos++;
+        continue;
+      }
+      aInsertar.push({ programacion_id: r.programacion_id, user_id: r.user_id, fecha: nuevaFecha });
+    }
+
+    if (aInsertar.length === 0) return { copiados: 0, omitidos };
+
+    const { error } = await supabase
+      .from('responsables_programacion')
+      .insert(aInsertar);
+    if (error) {
+      if (error.code === '23505') throw new Error('Algunas asignaciones ya existían en la semana destino.');
+      throw new Error(error.message);
+    }
+    return { copiados: aInsertar.length, omitidos };
   },
 };

@@ -82,5 +82,11 @@ export function useResponsables() {
     [runVoid]
   );
 
-  return { loading, error, getResponsablesPorFecha, getResponsablesFecha, getResponsablesRango, asignarResponsable, asignarVarios, toggleNotificado, eliminarResponsable };
+  const copiarSemana = useCallback(
+    (origenInicio: string, destinoInicio: string, programacionIdsActivas: string[]): Promise<{ copiados: number; omitidos: number } | null> =>
+      run(() => responsableRepository.copiarSemana(origenInicio, destinoInicio, programacionIdsActivas)),
+    [run]
+  );
+
+  return { loading, error, getResponsablesPorFecha, getResponsablesFecha, getResponsablesRango, asignarResponsable, asignarVarios, toggleNotificado, eliminarResponsable, copiarSemana };
 }

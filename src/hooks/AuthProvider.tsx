@@ -22,7 +22,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       // Mantener la misma referencia si el usuario no cambió, para no disparar
       // re-renders en useEffect que dependen de `user` (p.ej. useRoles).
-      setUser(prev => (prev?.id === nextUser?.id ? prev : nextUser));
+      // Comparamos también el nombre: así un cambio de nombre (evento
+      // USER_UPDATED) se refleja al instante en el saludo, sin recargar roles
+      // en cada refresco de token (TOKEN_REFRESHED), donde el nombre no cambia.
+      setUser(prev =>
+        prev?.id === nextUser?.id &&
+        prev?.user_metadata?.full_name === nextUser?.user_metadata?.full_name
+          ? prev
+          : nextUser
+      );
 
       // La sincronización de nombre solo tiene sentido al iniciar sesión.
       // IMPORTANTE: debe ir en setTimeout. Supabase mantiene un candado interno
