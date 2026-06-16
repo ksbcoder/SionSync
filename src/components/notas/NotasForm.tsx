@@ -12,6 +12,19 @@ interface NotasFormProps {
 
 const iconBtn = 'min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg transition-colors';
 
+/**
+ * Pone en mayúscula la nota inicial de cada acorde, conservando el resto tal
+ * como se escribió (así la 'm' de menor sigue en minúscula: 'am - f#m' → 'Am - F#m').
+ * Los acordes van separados por espacios, así que basta con capitalizar la
+ * primera letra de cada bloque.
+ */
+function mayusculaNota(texto: string): string {
+  return texto
+    .split(' ')
+    .map(token => (token ? token.charAt(0).toUpperCase() + token.slice(1) : token))
+    .join(' ');
+}
+
 export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFormProps) {
   const [nuevo, setNuevo] = useState('');
   const [editando, setEditando] = useState<string | null>(null);
@@ -61,7 +74,7 @@ export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFo
               <input
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-base font-mono focus:outline-none focus:border-gray-500"
                 value={editValor}
-                onChange={e => setEditValor(e.target.value)}
+                onChange={e => setEditValor(mayusculaNota(e.target.value))}
                 onKeyDown={e => e.key === 'Enter' && handleUpdate(nota.id)}
                 autoFocus
               />
@@ -111,7 +124,7 @@ export function NotasForm({ notas, canEdit, onAdd, onUpdate, onDelete }: NotasFo
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-base font-mono focus:outline-none focus:border-gray-500"
             placeholder="Ej: Am - F - C - G"
             value={nuevo}
-            onChange={e => setNuevo(e.target.value)}
+            onChange={e => setNuevo(mayusculaNota(e.target.value))}
             onKeyDown={handleNuevoKeyDown}
           />
           <button
