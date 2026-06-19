@@ -56,12 +56,28 @@ export function SeccionItem({
               )}
             </div>
             {canEdit && (
-              <button
-                onClick={() => setMenuOpen(true)}
-                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors shrink-0"
-              >
-                <MoreVertical className="w-5 h-5" />
-              </button>
+              <div className="flex items-center shrink-0">
+                <button
+                  onClick={() => setNotasOpen(true)}
+                  title="Acordes / Notas"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-chord-dark hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Music className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => { onDuplicate(); }}
+                  title="Duplicar"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
+                >
+                  <Copy className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setMenuOpen(true)}
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </button>
+              </div>
             )}
           </div>
           <p className="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap">{seccion.letra}</p>
@@ -70,10 +86,6 @@ export function SeccionItem({
 
       <BottomSheet isOpen={menuOpen} onClose={() => setMenuOpen(false)} title="Opciones de sección">
         <div className="flex flex-col gap-1">
-          <button onClick={() => closeAndRun(() => setNotasOpen(true))} className={`${menuItemBase} text-gray-700 hover:bg-gray-50`}>
-            <Music className="w-5 h-5 text-chord-dark" />
-            Acordes / Notas
-          </button>
           <button onClick={() => closeAndRun(() => setEditOpen(true))} className={`${menuItemBase} text-gray-700 hover:bg-gray-50`}>
             <Pencil className="w-5 h-5 text-brand-500" />
             Editar sección
@@ -85,10 +97,6 @@ export function SeccionItem({
           <button onClick={() => closeAndRun(onMoveDown)} disabled={!canMoveDown} className={`${menuItemBase} text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none`}>
             <ChevronDown className="w-5 h-5 text-gray-500" />
             Mover abajo
-          </button>
-          <button onClick={() => closeAndRun(() => { onDuplicate(); })} className={`${menuItemBase} text-gray-700 hover:bg-gray-50`}>
-            <Copy className="w-5 h-5 text-gray-500" />
-            Duplicar
           </button>
           <button onClick={() => closeAndRun(onDelete)} className={`${menuItemBase} text-red-500 hover:bg-red-50`}>
             <Trash2 className="w-5 h-5" />
