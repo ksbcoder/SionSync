@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles, Check, X } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
 import { useSesiones } from '../../hooks/useSesiones';
+import { useSecciones } from '../../hooks/useSecciones';
 import { useToast } from '../../hooks/useToast';
 import { TouchButton } from '../ui/TouchButton';
+import { GenerarLetraSheet } from './GenerarLetraSheet';
 import { TONALIDADES, calcularSiguienteOrden } from '../../domain';
-import type { Cancion } from '../../domain';
+import type { Cancion, SeccionGenerada } from '../../domain';
 
 interface CancionFormProps {
   cancionExistente?: Cancion;
@@ -20,12 +22,17 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
   const sesionId = searchParams.get('sesion');
   const { createCancion, updateCancion, loading } = useCanciones();
   const { getSesion, agregarCancion } = useSesiones();
+  const { addSecciones } = useSecciones();
   const { showToast } = useToast();
 
   const [titulo, setTitulo] = useState(cancionExistente?.titulo ?? '');
   const [autor, setAutor] = useState(cancionExistente?.autor ?? '');
   const [tonalidad, setTonalidad] = useState(cancionExistente?.tonalidad ?? '');
   const [tempo, setTempo] = useState<string>(cancionExistente?.tempo?.toString() ?? '');
+
+  // Secciones propuestas por la IA, listas para guardarse al crear la canción.
+  const [iaOpen, setIaOpen] = useState(false);
+  const [seccionesIA, setSeccionesIA] = useState<SeccionGenerada[] | null>(null);
 
   const handleSubmit = async () => {
     if (!titulo.trim()) return;
@@ -53,6 +60,12 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
     } else {
       const created = await createCancion(data);
       if (created) {
+        // Si la IA propuso secciones y el usuario las aplicó, se guardan ahora.
+        if (seccionesIA?.length) {
+          await addSecciones(
+            seccionesIA.map((s, i) => ({ cancion_id: created.id, tipo: s.tipo, letra: s.letra, orden: i }))
+          );
+        }
         if (sesionId) {
           // Queda en el catálogo y, además, se agrega al final de la sesión.
           const sesion = await getSesion(sesionId);
@@ -106,6 +119,7 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
             onChange={e => setAutor(e.target.value)}
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tonalidad</label>
           <select
@@ -129,17 +143,56 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
             max="300"
           />
         </div>
+
+        {!esEdicion && (
+          seccionesIA?.length ? (
+            <div className="flex items-center justify-between gap-2 bg-emerald-50 rounded-xl px-3 py-2.5">
+              <span className="flex items-center gap-2 text-sm text-emerald-800">
+                <Check className="w-4 h-4 shrink-0" />
+                {seccionesIA.length} {seccionesIA.length === 1 ? 'sección lista' : 'secciones listas'} para guardar
+              </span>
+              <button
+                type="button"
+                onClick={() => setSeccionesIA(null)}
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-emerald-700 hover:bg-emerald-100 rounded-lg"
+                aria-label="Quitar secciones generadas"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => { if (titulo.trim()) setIaOpen(true); }}
+              disabled={!titulo.trim()}
+              className="flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-brand-50 text-brand-800 font-medium text-sm hover:bg-brand-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Sparkles className="w-4 h-4" />
+              Generar letra con IA
+            </button>
+          )
+        )}
       </div>
 
-      <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex flex-col gap-2"
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4"
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
-        <TouchButton variant="primary" fullWidth onClick={handleSubmit} disabled={loading || !titulo.trim()}>
-          {loading ? 'Guardando...' : 'Guardar'}
-        </TouchButton>
-        <TouchButton variant="secondary" fullWidth onClick={() => navigate(-1)}>
-          Cancelar
-        </TouchButton>
+        <div className="max-w-lg mx-auto w-full flex flex-col gap-2">
+          <TouchButton variant="primary" fullWidth onClick={handleSubmit} disabled={loading || !titulo.trim()}>
+            {loading ? 'Guardando...' : 'Guardar'}
+          </TouchButton>
+          <TouchButton variant="secondary" fullWidth onClick={() => navigate(-1)}>
+            Cancelar
+          </TouchButton>
+        </div>
       </div>
+
+      <GenerarLetraSheet
+        isOpen={iaOpen}
+        onClose={() => setIaOpen(false)}
+        titulo={titulo.trim()}
+        autor={autor.trim() || null}
+        onAplicar={setSeccionesIA}
+      />
     </div>
   );
 }
