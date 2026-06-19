@@ -79,7 +79,7 @@ export function SesionPresentacion() {
               >
                 −
               </button>
-              <span className="text-white/50 text-sm w-4 text-center">{velocidad}</span>
+              <span className="text-white/50 text-sm w-6 text-center">{velocidad}</span>
               <button
                 onClick={subirVelocidad}
                 className="min-h-[48px] min-w-[36px] flex items-center justify-center text-white/60 hover:text-white rounded-xl transition-colors text-lg font-bold"

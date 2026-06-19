@@ -17,7 +17,7 @@ export function useAutoScroll<T extends HTMLElement>(scrollRef: RefObject<T | nu
 
   useEffect(() => { velocidadRef.current = velocidad; }, [velocidad]);
 
-  // px/segundo = velocidad * 3 → rango: 3px/s (vel 1) a 30px/s (vel 10)
+  // px/segundo = velocidad * 3 → rango: 3px/s (vel 1) a 45px/s (vel 15)
   const scroll = useCallback((timestamp: number) => {
     if (lastTimeRef.current !== null && scrollRef.current) {
       const delta = timestamp - lastTimeRef.current;
@@ -51,7 +51,7 @@ export function useAutoScroll<T extends HTMLElement>(scrollRef: RefObject<T | nu
     accumRef.current = 0;
   }, [scrollRef]);
 
-  const subirVelocidad = useCallback(() => setVelocidad(v => Math.min(10, v + 1)), []);
+  const subirVelocidad = useCallback(() => setVelocidad(v => Math.min(15, v + 1)), []);
   const bajarVelocidad = useCallback(() => setVelocidad(v => Math.max(1, v - 1)), []);
 
   return { autoScroll, setAutoScroll, velocidad, subirVelocidad, bajarVelocidad, reiniciar };

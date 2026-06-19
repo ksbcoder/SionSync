@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, MoreVertical, Plus, Presentation, Trash2 } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Plus, Presentation, Trash2, Pencil, Info } from 'lucide-react';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useCancionDetalle } from '../../hooks/useCancionDetalle';
 import { useCanEdit } from '../../hooks/useRoles';
@@ -148,23 +148,47 @@ export function CancionDetalle() {
       <BottomSheet isOpen={menuOpen} onClose={() => setMenuOpen(false)} title="Opciones">
         <div className="flex flex-col gap-2">
           {canEdit && (
-            <button onClick={() => { navigate(`/cancion/${id}/editar`); setMenuOpen(false); }}
-              className="w-full h-12 text-left px-4 rounded-xl hover:bg-gray-100 text-gray-700 font-medium">
-              Editar canción
+            <button
+              onClick={() => { navigate(`/cancion/${id}/editar`); setMenuOpen(false); }}
+              className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
+            >
+              <Pencil className="w-5 h-5 text-brand-700" />
+              <div>
+                <p className="font-medium text-gray-800">Editar canción</p>
+                <p className="text-xs text-gray-400 mt-0.5">Modificar letra, tono y datos</p>
+              </div>
             </button>
           )}
-          <button onClick={() => { navigate(`/cancion/${id}/presentacion`); setMenuOpen(false); }}
-            className="w-full h-12 text-left px-4 rounded-xl hover:bg-brand-100 text-brand-700 font-medium">
-            Modo presentación
+          <button
+            onClick={() => { navigate(`/cancion/${id}/presentacion`); setMenuOpen(false); }}
+            className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
+          >
+            <Presentation className="w-5 h-5 text-brand-700" />
+            <div>
+              <p className="font-medium text-gray-800">Modo presentación</p>
+              <p className="text-xs text-gray-400 mt-0.5">Mostrar la letra en pantalla completa</p>
+            </div>
           </button>
-          <button onClick={() => { setDetallesOpen(true); setMenuOpen(false); }}
-            className="w-full h-12 text-left px-4 rounded-xl hover:bg-gray-100 text-gray-700 font-medium">
-            Detalles
+          <button
+            onClick={() => { setDetallesOpen(true); setMenuOpen(false); }}
+            className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
+          >
+            <Info className="w-5 h-5 text-stage-muted" />
+            <div>
+              <p className="font-medium text-gray-800">Detalles</p>
+              <p className="text-xs text-gray-400 mt-0.5">Ver quién creó y modificó</p>
+            </div>
           </button>
           {canEdit && (
-            <button onClick={() => { setConfirmCancion(true); setMenuOpen(false); }}
-              className="w-full h-12 text-left px-4 rounded-xl hover:bg-red-50 text-red-500 font-medium">
-              Eliminar canción
+            <button
+              onClick={() => { setConfirmCancion(true); setMenuOpen(false); }}
+              className="w-full text-left p-4 rounded-xl hover:bg-red-50 border border-red-100 transition-colors flex items-center gap-3"
+            >
+              <Trash2 className="w-5 h-5 text-danger" />
+              <div>
+                <p className="font-medium text-danger">Eliminar canción</p>
+                <p className="text-xs text-gray-400 mt-0.5">Esta acción no se puede deshacer</p>
+              </div>
             </button>
           )}
         </div>
