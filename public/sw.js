@@ -43,7 +43,7 @@ self.addEventListener('push', e => {
   const options = {
     body: datos.body || '',
     icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    badge: '/icons/badge.png',
     data: { url: datos.url || '/' },
     tag: datos.tag,            // avisos con el mismo tag se reemplazan, no se apilan
     renotify: Boolean(datos.tag),
