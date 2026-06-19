@@ -19,6 +19,12 @@ export interface SeccionInsert {
   letra: string;
 }
 
+// Una sección tal como la propone la IA, antes de guardarla (sin id ni canción).
+export interface SeccionGenerada {
+  tipo: TipoSeccion;
+  letra: string;
+}
+
 export const TIPOS_SECCION: Record<TipoSeccion, { label: string; bg: string; text: string }> = {
   verso:      { label: 'Verso',    bg: '#c7d2fe', text: '#312e81' },
   coro:       { label: 'Coro',     bg: '#fde68a', text: '#78350f' },

@@ -12,6 +12,12 @@ export const seccionRepository = {
     return created;
   },
 
+  async createMany(data: SeccionInsert[]): Promise<void> {
+    if (data.length === 0) return;
+    const { error } = await supabase.from('secciones').insert(data);
+    if (error) throw new Error(error.message);
+  },
+
   async update(id: string, data: Partial<Pick<SeccionInsert, 'tipo' | 'letra'>>): Promise<Seccion> {
     const { data: updated, error } = await supabase
       .from('secciones')

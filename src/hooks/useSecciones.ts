@@ -18,6 +18,11 @@ export function useSecciones() {
     [run]
   );
 
+  const addSecciones = useCallback(
+    (secciones: SeccionInsert[]): Promise<boolean> => runVoid(() => seccionRepository.createMany(secciones)),
+    [runVoid]
+  );
+
   const deleteSeccion = useCallback(
     (id: string): Promise<boolean> => runVoid(() => seccionRepository.delete(id)),
     [runVoid]
@@ -54,5 +59,5 @@ export function useSecciones() {
     [run]
   );
 
-  return { loading, error, addSeccion, updateSeccion, deleteSeccion, reordenarSecciones, duplicarSeccion };
+  return { loading, error, addSeccion, addSecciones, updateSeccion, deleteSeccion, reordenarSecciones, duplicarSeccion };
 }

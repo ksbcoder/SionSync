@@ -23,12 +23,12 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
   const modal = isDesktop ? (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[85vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
           <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
           <button onClick={onClose} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-lg">✕</button>
         </div>
-        <div className="overflow-y-auto p-4">{children}</div>
+        <div className="flex flex-col flex-1 min-h-0 overflow-y-auto p-4">{children}</div>
       </div>
     </div>
   ) : (
@@ -43,7 +43,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
           <button onClick={onClose} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <div
-          className="overflow-y-auto p-4"
+          className="flex flex-col flex-1 min-h-0 overflow-y-auto p-4"
           style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
         >
           {children}
