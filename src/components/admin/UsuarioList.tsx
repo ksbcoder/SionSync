@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, ShieldCheck, ShieldX, UserCheck, UserX } from 'lucide-react';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../hooks/useToast';
 import { BottomSheet } from '../layout/BottomSheet';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { DotLoader } from '../ui/DotLoader';
@@ -22,12 +23,12 @@ function getRolActual(usuario: UsuarioConRol): RoleName {
 export function UsuarioList() {
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const { showToast } = useToast();
   const [usuarios, setUsuarios] = useState<UsuarioConRol[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UsuarioConRol | null>(null);
   const [roleSheetOpen, setRoleSheetOpen] = useState(false);
   const [confirmToggle, setConfirmToggle] = useState<UsuarioConRol | null>(null);
-  const [saving, setSaving] = useState(false);
 
   const cargar = async () => {
     setLoading(true);
@@ -38,23 +39,47 @@ export function UsuarioList() {
 
   useEffect(() => { cargar(); }, []);
 
+  // Cambiar rol y activar/desactivar reflejan el cambio en la lista al instante
+  // y revierten si el servidor falla; no recargan toda la lista.
   const handleChangeRole = async (newRole: RoleName) => {
     if (!selectedUser) return;
-    setSaving(true);
-    await usuarioRepository.changeRole(selectedUser.id, newRole);
+    const userId = selectedUser.id;
+    const previo = usuarios;
+    const base = selectedUser.user_roles[0];
+    setUsuarios(prev => prev.map(u => u.id === userId ? {
+      ...u,
+      user_roles: [{
+        id: base?.id ?? 'temp',
+        user_id: userId,
+        role_id: base?.role_id ?? 'temp',
+        module: 'global',
+        created_at: base?.created_at ?? new Date().toISOString(),
+        roles: { name: newRole, description: ROLES_INFO[newRole].description },
+      }],
+    } : u));
     setRoleSheetOpen(false);
     setSelectedUser(null);
-    setSaving(false);
-    await cargar();
+    try {
+      await usuarioRepository.changeRole(userId, newRole);
+    } catch (e) {
+      setUsuarios(previo);
+      showToast(e instanceof Error ? e.message : 'No se pudo cambiar el rol', 'error');
+    }
   };
 
   const handleToggleActive = async () => {
     if (!confirmToggle) return;
-    setSaving(true);
-    await usuarioRepository.toggleActive(confirmToggle.id, !confirmToggle.active);
+    const usuario = confirmToggle;
+    const nuevoEstado = !usuario.active;
+    const previo = usuarios;
+    setUsuarios(prev => prev.map(u => u.id === usuario.id ? { ...u, active: nuevoEstado } : u));
     setConfirmToggle(null);
-    setSaving(false);
-    await cargar();
+    try {
+      await usuarioRepository.toggleActive(usuario.id, nuevoEstado);
+    } catch (e) {
+      setUsuarios(previo);
+      showToast(e instanceof Error ? e.message : 'No se pudo cambiar el estado', 'error');
+    }
   };
 
   return (
@@ -140,12 +165,12 @@ export function UsuarioList() {
               <button
                 key={key}
                 onClick={() => !isCurrentRole && handleChangeRole(key)}
-                disabled={saving || isCurrentRole}
+                disabled={isCurrentRole}
                 className={`w-full text-left p-4 rounded-xl transition-colors ${
                   isCurrentRole
                     ? 'bg-brand-50 border-2 border-brand-300'
                     : 'hover:bg-gray-50 border border-gray-200'
-                } ${saving ? 'opacity-50' : ''}`}
+                }`}
               >
                 <div className="flex items-center gap-2">
                   {isCurrentRole ? <ShieldCheck className="w-5 h-5 text-brand-700" /> : <ShieldX className="w-5 h-5 text-gray-300" />}

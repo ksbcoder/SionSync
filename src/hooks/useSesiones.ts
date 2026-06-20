@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useAsync } from './useAsync';
 import { sesionRepository } from '../infrastructure/sesion.repository';
-import type { Sesion, SesionConCanciones, SesionInsert } from '../domain';
+import type { Sesion, SesionConCanciones, SesionCancion, SesionInsert } from '../domain';
 
 export function useSesiones() {
   const { loading, error, run, runVoid } = useAsync();
@@ -39,9 +39,9 @@ export function useSesiones() {
   );
 
   const agregarVarias = useCallback(
-    (sesionId: string, items: { cancionId: string; orden: number }[]): Promise<boolean> =>
-      runVoid(() => sesionRepository.agregarVarias(sesionId, items)),
-    [runVoid]
+    (sesionId: string, items: { cancionId: string; orden: number }[]): Promise<SesionCancion[] | null> =>
+      run(() => sesionRepository.agregarVarias(sesionId, items)),
+    [run]
   );
 
   const quitarCancion = useCallback(

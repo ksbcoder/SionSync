@@ -70,13 +70,19 @@ export const sesionRepository = {
   async agregarVarias(
     sesionId: string,
     items: { cancionId: string; orden: number }[]
-  ): Promise<void> {
+  ): Promise<SesionCancion[]> {
     const filas = items.map(i => ({ sesion_id: sesionId, cancion_id: i.cancionId, orden: i.orden }));
-    const { error } = await supabase.from('sesion_canciones').insert(filas);
+    // Devolvemos las filas creadas con su canción para poder agregarlas a la
+    // pantalla sin recargar toda la sesión.
+    const { data, error } = await supabase
+      .from('sesion_canciones')
+      .insert(filas)
+      .select('*, canciones(*)');
     if (error) {
       if (error.code === '23505') throw new Error('Una o más canciones ya estaban en la sesión.');
       throw new Error(error.message);
     }
+    return (data ?? []) as unknown as SesionCancion[];
   },
 
   async quitarCancion(sesionCancionId: string): Promise<void> {

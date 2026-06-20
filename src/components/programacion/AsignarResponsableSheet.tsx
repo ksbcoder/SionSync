@@ -14,7 +14,7 @@ interface Props {
   onClose: () => void;
   programacion: Programacion | null;
   fechaInicial: string;
-  onAsignado: () => void;
+  onAsignado: (cambios: { agregados: ResponsableProgramacion[]; quitadosIds: string[] }) => void;
 }
 
 export function AsignarResponsableSheet({ isOpen, onClose, programacion, fechaInicial, onAsignado }: Props) {
@@ -76,6 +76,7 @@ export function AsignarResponsableSheet({ isOpen, onClose, programacion, fechaIn
     if (!programacion || !hayCambios) return;
 
     let ok = true;
+    let agregados: ResponsableProgramacion[] = [];
     if (aAgregar.length > 0) {
       const inserts = aAgregar.map(user_id => ({
         programacion_id: programacion.id,
@@ -83,19 +84,23 @@ export function AsignarResponsableSheet({ isOpen, onClose, programacion, fechaIn
         fecha: fechaInicial,
       }));
       const result = await asignarVarios(inserts);
-      if (!result) ok = false;
+      if (result) agregados = result;
+      else ok = false;
     }
 
+    const quitadosIds: string[] = [];
     if (ok && aQuitar.length > 0) {
       for (const resp of aQuitar) {
         const eliminado = await eliminarResponsable(resp.id);
         if (!eliminado) { ok = false; break; }
+        quitadosIds.push(resp.id);
       }
     }
 
     if (!ok) return;
 
-    onAsignado();
+    // El padre refleja estos cambios en la semana sin recargar.
+    onAsignado({ agregados, quitadosIds });
     onClose();
 
     const partes: string[] = [];
