@@ -14,8 +14,8 @@ interface Props {
   sesionId: string;
   /** Ids de canciones que ya están en la sesión (se excluyen del listado). */
   idsEnSesion: Set<string>;
-  /** Agrega las canciones elegidas a la sesión. */
-  onAgregar: (cancionIds: string[]) => Promise<void>;
+  /** Agrega las canciones elegidas a la sesión. Devuelve si salió bien. */
+  onAgregar: (cancionIds: string[]) => Promise<boolean>;
 }
 
 export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, onAgregar }: Props) {
@@ -56,9 +56,11 @@ export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, 
     if (seleccionados.size === 0) return;
     setGuardando(true);
     try {
-      await onAgregar(Array.from(seleccionados));
-      showToast(`${seleccionados.size} ${seleccionados.size === 1 ? 'canción agregada' : 'canciones agregadas'}`, 'success');
-      onClose();
+      const ok = await onAgregar(Array.from(seleccionados));
+      if (ok) {
+        showToast(`${seleccionados.size} ${seleccionados.size === 1 ? 'canción agregada' : 'canciones agregadas'}`, 'success');
+        onClose();
+      }
     } finally {
       setGuardando(false);
     }

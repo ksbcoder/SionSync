@@ -33,9 +33,9 @@ export function useCancionDetalle(id: string | undefined) {
   const agregarSeccion = useCallback(async (data: { tipo: TipoSeccion; letra: string }) => {
     if (!id || !cancion) return;
     const orden = calcularSiguienteOrden(cancion.secciones ?? []);
-    await addSeccion({ cancion_id: id, tipo: data.tipo, letra: data.letra, orden });
-    await cargar();
-  }, [id, cancion, addSeccion, cargar]);
+    const nueva = await addSeccion({ cancion_id: id, tipo: data.tipo, letra: data.letra, orden });
+    if (nueva) setCancion(c => c ? { ...c, secciones: [...(c.secciones ?? []), { ...nueva, notas: [] }] } : c);
+  }, [id, cancion, addSeccion]);
 
   // Aplica el cambio en pantalla al instante; si el servidor falla, revierte.
   const editarSeccion = useCallback(async (seccionId: string, data: { tipo: TipoSeccion; letra: string }) => {
@@ -83,9 +83,12 @@ export function useCancionDetalle(id: string | undefined) {
   const agregarNota = useCallback(async (seccionId: string, contenido: string) => {
     const seccion = cancion?.secciones?.find(s => s.id === seccionId);
     const orden = seccion?.notas?.length ?? 0;
-    await addNota({ seccion_id: seccionId, orden, contenido });
-    await cargar();
-  }, [cancion, addNota, cargar]);
+    const nueva = await addNota({ seccion_id: seccionId, orden, contenido });
+    if (nueva) setCancion(c => c ? {
+      ...c,
+      secciones: c.secciones?.map(s => s.id === seccionId ? { ...s, notas: [...(s.notas ?? []), nueva] } : s),
+    } : c);
+  }, [cancion, addNota]);
 
   const editarNota = useCallback(async (notaId: string, contenido: string) => {
     const previo = cancion;

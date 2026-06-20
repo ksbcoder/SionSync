@@ -18,7 +18,7 @@ import { formatFecha } from '../../domain';
 export function SesionDetalle() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { sesion, loading, canciones, cargar, agregarCanciones, quitar, mover } = useSesionDetalle(id);
+  const { sesion, loading, canciones, cargar, agregarCanciones, actualizarDatos, quitar, mover } = useSesionDetalle(id);
   const { deleteSesion } = useSesiones();
   const { showToast } = useToast();
   const canEdit = useCanEdit(sesion?.user_id);
@@ -172,7 +172,7 @@ export function SesionDetalle() {
         isOpen={editarOpen}
         onClose={() => setEditarOpen(false)}
         sesionExistente={sesion}
-        onGuardado={cargar}
+        onGuardado={actualizarDatos}
       />
 
       <AgregarCancionesSheet

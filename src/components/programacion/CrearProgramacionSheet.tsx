@@ -9,7 +9,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   programacionesExistentes: Programacion[];
-  onCreada: () => void;
+  onCreada: (programacion: Programacion) => void;
 }
 
 export function CrearProgramacionSheet({ isOpen, onClose, programacionesExistentes, onCreada }: Props) {
@@ -30,7 +30,7 @@ export function CrearProgramacionSheet({ isOpen, onClose, programacionesExistent
   const handleCrear = async (tipoId: string) => {
     const created = await createProgramacion({ tipo_id: tipoId });
     if (created) {
-      onCreada();
+      onCreada(created);
       onClose();
       showToast('Programación creada', 'success');
     }

@@ -64,11 +64,11 @@ export function TiposProgramacionList() {
     if (!nombre) return;
     setSaving(true);
     try {
-      await programacionRepository.createTipo(nombre, nuevoColor);
+      const creado = await programacionRepository.createTipo(nombre, nuevoColor);
+      setTipos(prev => [...prev, creado].sort((a, b) => a.nombre.localeCompare(b.nombre)));
       setNuevoNombre('');
       setNuevoColor(COLORES_TIPO_PROGRAMACION[0]);
       setCreando(false);
-      await cargar();
       showToast('Tipo creado', 'success');
     } catch (e) {
       showToast(e instanceof Error ? e.message : 'Error al crear el tipo', 'error');
@@ -77,34 +77,38 @@ export function TiposProgramacionList() {
     }
   };
 
+  // Editar y eliminar aplican el cambio en pantalla al instante y revierten si
+  // el servidor falla; no recargan la lista completa.
   const handleEditar = async () => {
     const nombre = editandoNombre.trim();
     if (!editandoId || !nombre) return;
-    setSaving(true);
+    const id = editandoId;
+    const color = editandoColor;
+    const previo = tipos;
+    setTipos(prev => prev.map(t => t.id === id ? { ...t, nombre, color } : t));
+    setEditandoId(null);
+    setEditandoNombre('');
     try {
-      await programacionRepository.updateTipo(editandoId, nombre, editandoColor);
-      setEditandoId(null);
-      setEditandoNombre('');
-      await cargar();
+      await programacionRepository.updateTipo(id, nombre, color);
       showToast('Tipo actualizado', 'success');
     } catch (e) {
+      setTipos(previo);
       showToast(e instanceof Error ? e.message : 'Error al actualizar el tipo', 'error');
-    } finally {
-      setSaving(false);
     }
   };
 
   const handleEliminar = async () => {
     if (!confirmEliminar) return;
-    setSaving(true);
+    const tipo = confirmEliminar;
+    const previo = tipos;
+    setTipos(prev => prev.filter(t => t.id !== tipo.id));
+    setConfirmEliminar(null);
     try {
-      await programacionRepository.deleteTipo(confirmEliminar.id);
-      await cargar();
+      await programacionRepository.deleteTipo(tipo.id);
       showToast('Tipo eliminado', 'success');
     } catch (e) {
+      setTipos(previo);
       showToast(e instanceof Error ? e.message : 'Error al eliminar el tipo', 'error');
-    } finally {
-      setSaving(false);
     }
   };
 

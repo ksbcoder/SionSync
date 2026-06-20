@@ -104,8 +104,10 @@ export function SesionList() {
         sesionExistente={editando}
         onGuardado={(sesion) => {
           // Si fue creación, entramos directo a la sesión para agregarle canciones.
+          // Si fue edición, actualizamos esa tarjeta en el sitio (sin recargar la
+          // lista), conservando su conteo de canciones.
           if (!editando) navigate(`/sesion/${sesion.id}`);
-          else cargar();
+          else setSesiones(prev => prev.map(s => s.id === sesion.id ? { ...s, ...sesion } : s));
         }}
       />
 

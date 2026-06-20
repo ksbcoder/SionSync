@@ -31,13 +31,24 @@ export function ProgramacionHome() {
     setFecha,
     diasSemana,
     todasProgramaciones,
+    setTodasProgramaciones,
     responsablesSemana,
     setResponsablesSemana,
     coloresPorFecha,
-    cargarProgramaciones,
     cargarSemana,
     loading,
   } = useProgramacionSemana();
+
+  // Agrega una programación recién creada a la lista sin recargar todo.
+  const agregarProgramacionLocal = (prog: Programacion) =>
+    setTodasProgramaciones(prev => [prog, ...prev]);
+
+  // Refleja en la semana los responsables recién asignados/quitados, sin recargar.
+  const aplicarCambiosResponsables = (cambios: { agregados: ResponsableProgramacion[]; quitadosIds: string[] }) =>
+    setResponsablesSemana(prev => [
+      ...prev.filter(r => !cambios.quitadosIds.includes(r.id)),
+      ...cambios.agregados,
+    ]);
 
   const [verInactivas, setVerInactivas] = useState(false);
   const [crearOpen, setCrearOpen] = useState(false);
@@ -73,43 +84,49 @@ export function ProgramacionHome() {
   const idsActivasSet = new Set(idsActivas);
   const asignacionesActivasSemana = responsablesSemana.filter(r => idsActivasSet.has(r.programacion_id)).length;
 
+  // Todas estas acciones reflejan el cambio en pantalla al instante y, si el
+  // servidor falla, revierten al estado anterior (el toast de error lo muestra
+  // useAsync). Así el usuario nunca ve una recarga ni un parpadeo de carga.
   const handleEliminarResp = async () => {
     if (!confirmEliminarResp) return;
-    const ok = await eliminarResponsable(confirmEliminarResp);
-    if (ok) {
-      setResponsablesSemana(prev => prev.filter(r => r.id !== confirmEliminarResp));
-      showToast('Responsable eliminado', 'success');
-    }
+    const id = confirmEliminarResp;
+    const previo = responsablesSemana;
+    setResponsablesSemana(prev => prev.filter(r => r.id !== id));
+    const ok = await eliminarResponsable(id);
+    if (ok) showToast('Responsable eliminado', 'success');
+    else setResponsablesSemana(previo);
   };
 
   const handleEliminarProg = async () => {
     if (!confirmEliminarProg) return;
-    const ok = await deleteProgramacion(confirmEliminarProg.id);
-    if (ok) {
-      await cargarProgramaciones();
-      showToast('Programación eliminada', 'success');
-    }
+    const prog = confirmEliminarProg;
+    const previo = todasProgramaciones;
+    setTodasProgramaciones(prev => prev.filter(p => p.id !== prog.id));
+    const ok = await deleteProgramacion(prog.id);
+    if (ok) showToast('Programación eliminada', 'success');
+    else setTodasProgramaciones(previo);
   };
 
   const handleToggleNotificado = async () => {
     if (!confirmNotificado) return;
-    const nuevoEstado = !confirmNotificado.notificado;
-    const ok = await toggleNotificado(confirmNotificado.id, nuevoEstado);
-    if (ok) {
-      setResponsablesSemana(prev => prev.map(r => r.id === confirmNotificado.id ? { ...r, notificado: nuevoEstado } : r));
-      showToast(nuevoEstado ? 'Marcado como notificado' : 'Marcado como pendiente', 'success');
-    }
+    const resp = confirmNotificado;
+    const nuevoEstado = !resp.notificado;
+    const previo = responsablesSemana;
+    setResponsablesSemana(prev => prev.map(r => r.id === resp.id ? { ...r, notificado: nuevoEstado } : r));
+    const ok = await toggleNotificado(resp.id, nuevoEstado);
+    if (ok) showToast(nuevoEstado ? 'Marcado como notificado' : 'Marcado como pendiente', 'success');
+    else setResponsablesSemana(previo);
   };
 
   const handleToggleActivo = async (prog: Programacion) => {
     const nuevoEstado = !prog.activo;
-    const ok = await toggleActivo(prog.id, nuevoEstado);
+    const previo = todasProgramaciones;
     setMenuProg(null);
-    if (ok) {
-      await cargarProgramaciones();
-      if (nuevoEstado) setVerInactivas(false);
-      showToast(nuevoEstado ? 'Programación reactivada' : 'Programación desactivada', 'success');
-    }
+    setTodasProgramaciones(prev => prev.map(p => p.id === prog.id ? { ...p, activo: nuevoEstado } : p));
+    if (nuevoEstado) setVerInactivas(false);
+    const ok = await toggleActivo(prog.id, nuevoEstado);
+    if (ok) showToast(nuevoEstado ? 'Programación reactivada' : 'Programación desactivada', 'success');
+    else setTodasProgramaciones(previo);
   };
 
   const abrirDetalles = async (prog: Programacion) => {
@@ -327,14 +344,14 @@ export function ProgramacionHome() {
         onClose={() => setAsignarPara(null)}
         programacion={asignarPara}
         fechaInicial={fecha}
-        onAsignado={cargarSemana}
+        onAsignado={aplicarCambiosResponsables}
       />
 
       <CrearProgramacionSheet
         isOpen={crearOpen}
         onClose={() => setCrearOpen(false)}
         programacionesExistentes={todasProgramaciones}
-        onCreada={cargarProgramaciones}
+        onCreada={agregarProgramacionLocal}
       />
 
       <DuplicarSemanaSheet

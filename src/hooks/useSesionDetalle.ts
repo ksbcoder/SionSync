@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSesiones } from './useSesiones';
 import { calcularSiguienteOrden } from '../domain';
-import type { SesionConCanciones } from '../domain';
+import type { Sesion, SesionConCanciones } from '../domain';
 
 /**
  * Concentra el estado de la pantalla de detalle de una sesión: la sesión con
@@ -25,13 +25,23 @@ export function useSesionDetalle(id: string | undefined) {
   const canciones = [...(sesion?.canciones ?? [])].sort((a, b) => a.orden - b.orden);
 
   // Agrega varias canciones del catálogo al final de la sesión, en bloque.
-  const agregarCanciones = useCallback(async (cancionIds: string[]) => {
-    if (!id || cancionIds.length === 0) return;
+  // Las muestra al instante con lo que devuelve el servidor; si falla, no toca
+  // la lista (useAsync ya avisa del error). Devuelve si salió bien.
+  const agregarCanciones = useCallback(async (cancionIds: string[]): Promise<boolean> => {
+    if (!id || cancionIds.length === 0) return false;
     let orden = calcularSiguienteOrden(sesion?.canciones ?? []);
     const items = cancionIds.map(cancionId => ({ cancionId, orden: orden++ }));
-    await agregarVarias(id, items);
-    await cargar();
-  }, [id, sesion, agregarVarias, cargar]);
+    const nuevas = await agregarVarias(id, items);
+    if (!nuevas) return false;
+    setSesion(s => s ? { ...s, canciones: [...s.canciones, ...nuevas] } : s);
+    return true;
+  }, [id, sesion, agregarVarias]);
+
+  // Refleja en pantalla los datos editados (nombre/fecha) sin recargar; conserva
+  // las canciones ya cargadas.
+  const actualizarDatos = useCallback((datos: Sesion) => {
+    setSesion(s => s ? { ...s, ...datos } : s);
+  }, []);
 
   // Quita la canción de la sesión al instante; si el servidor rechaza, revierte.
   const quitar = useCallback(async (sesionCancionId: string) => {
@@ -62,5 +72,5 @@ export function useSesionDetalle(id: string | undefined) {
     if (!ok) setSesion(previo);
   }, [sesion, reordenar]);
 
-  return { sesion, loading, canciones, cargar, agregarCanciones, quitar, mover };
+  return { sesion, loading, canciones, cargar, agregarCanciones, actualizarDatos, quitar, mover };
 }

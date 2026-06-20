@@ -2,12 +2,6 @@ import { createContext, useContext } from 'react';
 
 export type ToastType = 'error' | 'success' | 'info';
 
-export interface ToastItem {
-  id: number;
-  message: string;
-  type: ToastType;
-}
-
 export interface ToastContextType {
   showToast: (message: string, type?: ToastType) => void;
 }

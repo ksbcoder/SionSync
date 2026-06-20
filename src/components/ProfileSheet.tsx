@@ -14,9 +14,15 @@ interface ProfileSheetProps {
 export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
   const { user } = useAuth();
   const displayName = user?.user_metadata?.full_name || '';
+  // Nombre que se muestra en esta pantalla. Lo separamos de la sesión de login
+  // para poder reflejar la edición al instante (la sesión tarda en refrescarse).
+  const [nombreMostrado, setNombreMostrado] = useState(displayName);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Si la sesión se refresca con un nombre nuevo, lo seguimos mostrando.
+  useEffect(() => { setNombreMostrado(displayName); }, [displayName]);
   const { estado, procesando, activar, desactivar } = usePushNotifications();
   const { showToast } = useToast();
 
@@ -41,7 +47,7 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
   }, [isOpen]);
 
   const handleEdit = () => {
-    setEditValue(displayName);
+    setEditValue(nombreMostrado);
     setEditing(true);
   };
 
@@ -51,10 +57,18 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
 
   const handleSave = async () => {
     if (!user || !editValue.trim()) return;
+    const nuevo = editValue.trim();
     setSaving(true);
-    await usuarioRepository.updateDisplayName(user.id, editValue.trim());
-    setEditing(false);
-    setSaving(false);
+    try {
+      await usuarioRepository.updateDisplayName(user.id, nuevo);
+      setNombreMostrado(nuevo);
+      setEditing(false);
+      showToast('Nombre actualizado', 'success');
+    } catch {
+      showToast('No se pudo actualizar el nombre', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -97,7 +111,7 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
               </div>
             ) : (
               <div className="flex items-center justify-between mt-1">
-                <p className="text-sm text-slate-800 font-medium">{displayName}</p>
+                <p className="text-sm text-slate-800 font-medium">{nombreMostrado}</p>
                 <button
                   onClick={handleEdit}
                   className="min-h-[40px] min-w-[40px] flex items-center justify-center text-slate-400 hover:text-brand-700 hover:bg-brand-50 rounded-lg"
