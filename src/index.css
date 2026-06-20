@@ -24,14 +24,6 @@
   }
 }
 
-/* Notificaciones Sileo: ancho adaptable en móviles (su valor fijo de 350px
-   se desborda o se ve apretado en pantallas angostas). */
-@media (max-width: 400px) {
-  :root {
-    --sileo-width: calc(100vw - 2rem);
-  }
-}
-
 @layer utilities {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
