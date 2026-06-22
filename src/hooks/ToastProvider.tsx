@@ -35,7 +35,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <div ref={containerRef}>
         <Toaster
           position="bottom-center"
-          richColors
           closeButton
           toastOptions={{ style: { textAlign: 'left' } }}
         />

@@ -93,7 +93,13 @@ export const programacionRepository = {
       .from('programaciones')
       .delete()
       .eq('id', id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      // 23503 = la base rechaza el borrado porque hay responsables asignados.
+      if (error.code === '23503') {
+        throw new Error('No se puede eliminar: tiene responsables asignados. Solo puedes inactivarla.');
+      }
+      throw new Error(error.message);
+    }
   },
 };
 
@@ -170,6 +176,17 @@ export const responsableRepository = {
       .delete()
       .eq('id', id);
     if (error) throw new Error(error.message);
+  },
+
+  // Cuántos responsables tiene una programación en TODAS sus fechas. Sirve para
+  // decidir si se puede eliminar (solo si no tiene ninguno).
+  async contarPorProgramacion(programacionId: string): Promise<number> {
+    const { count, error } = await supabase
+      .from('responsables_programacion')
+      .select('id', { count: 'exact', head: true })
+      .eq('programacion_id', programacionId);
+    if (error) throw new Error(error.message);
+    return count ?? 0;
   },
 
   /**

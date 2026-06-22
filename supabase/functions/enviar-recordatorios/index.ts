@@ -78,10 +78,13 @@ Deno.serve(async (req) => {
   );
 
   // Responsables de la fecha objetivo (con el nombre de su tipo de programación).
+  // El '!inner' descarta los responsables cuya programación no cumpla el filtro:
+  // si la programación está inactiva, su responsable no recibe recordatorio.
   let query = supabase
     .from('responsables_programacion')
-    .select('id, user_id, fecha, notificado, programaciones(tipos_programacion(nombre))')
-    .eq('fecha', objetivo);
+    .select('id, user_id, fecha, notificado, programaciones!inner(activo, tipos_programacion(nombre))')
+    .eq('fecha', objetivo)
+    .eq('programaciones.activo', true);
   if (!forzar) query = query.eq('notificado', false);
 
   const { data: responsables, error } = await query;

@@ -24,7 +24,7 @@ export function ProgramacionHome() {
   const { showToast } = useToast();
   const { isAdmin, canGestionarProgramacion, canGestionarNotificaciones } = useRoles();
   const { deleteProgramacion, toggleActivo } = useProgramaciones();
-  const { eliminarResponsable, toggleNotificado } = useResponsables();
+  const { eliminarResponsable, toggleNotificado, contarPorProgramacion } = useResponsables();
 
   const {
     fecha,
@@ -95,6 +95,20 @@ export function ProgramacionHome() {
     const ok = await eliminarResponsable(id);
     if (ok) showToast('Responsable eliminado', 'success');
     else setResponsablesSemana(previo);
+  };
+
+  // Pide eliminar una programación, pero antes verifica que no tenga ningún
+  // responsable (en ninguna fecha). Si tiene, no se elimina: solo se puede
+  // inactivar. Cubre tanto el menú como el swipe de la tarjeta.
+  const solicitarEliminarProg = async (prog: Programacion) => {
+    setMenuProg(null);
+    const count = await contarPorProgramacion(prog.id);
+    if (count === null) return; // hubo error de red; useAsync ya avisó
+    if (count > 0) {
+      showToast('No se puede eliminar: tiene responsables. Solo puedes inactivarla.', 'error');
+      return;
+    }
+    setConfirmEliminarProg(prog);
   };
 
   const handleEliminarProg = async () => {
@@ -230,7 +244,7 @@ export function ProgramacionHome() {
               puedeEditar={puedeEditarProg(prog)}
               canGestionarNotificaciones={canGestionarNotificaciones}
               onAbrirMenu={setMenuProg}
-              onEliminarProg={setConfirmEliminarProg}
+              onEliminarProg={solicitarEliminarProg}
               onEliminarResp={setConfirmEliminarResp}
               onToggleNotificado={setConfirmNotificado}
             />
@@ -293,13 +307,13 @@ export function ProgramacionHome() {
             </div>
           </button>
           <button
-            onClick={() => { setConfirmEliminarProg(menuProg); setMenuProg(null); }}
+            onClick={() => { if (menuProg) solicitarEliminarProg(menuProg); }}
             className="w-full text-left p-4 rounded-xl hover:bg-red-50 border border-red-100 transition-colors flex items-center gap-3"
           >
             <Trash2 className="w-5 h-5 text-danger" />
             <div>
               <p className="font-medium text-danger">Eliminar programación</p>
-              <p className="text-xs text-gray-400 mt-0.5">Se eliminarán todos los responsables asociados</p>
+              <p className="text-xs text-gray-400 mt-0.5">Solo si no tiene responsables asignados</p>
             </div>
           </button>
         </div>
@@ -378,7 +392,7 @@ export function ProgramacionHome() {
         onClose={() => setConfirmEliminarProg(null)}
         onConfirm={handleEliminarProg}
         title={`¿Eliminar "${confirmEliminarProg?.tipos_programacion?.nombre}"?`}
-        description="Se eliminarán todos los responsables asociados a esta programación. Esta acción no se puede deshacer."
+        description="Esta acción no se puede deshacer."
       />
 
       {/* Confirmación: toggle notificado */}
