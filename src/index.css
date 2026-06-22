@@ -24,20 +24,74 @@
   }
 }
 
-/* Botón de cerrar de Sonner: por defecto va a la izquierda y es muy pequeño.
-   Lo movemos a la derecha y agrandamos el área de toque. */
+/* Tema propio de Sonner con la paleta indigo de la app.
+   Usamos las variables del propio Sonner para que el estilo gane sin pelear
+   por especificidad. Fondo blanco, borde y texto indigo, esquinas redondeadas
+   como las cards de la app. */
 [data-sonner-toaster] {
-  --toast-close-button-start: unset;
-  --toast-close-button-end: 0;
-  --toast-close-button-transform: translate(35%, -35%);
+  --normal-bg: #ffffff;
+  --normal-border: #c7d2fe; /* brand-200 */
+  --normal-text: #312e81;   /* brand-900 */
+  --border-radius: 14px;
 }
 
-[data-sonner-toast] [data-close-button] {
+/* Importante: Sonner inyecta su CSS en tiempo de ejecución y puede ir después
+   del nuestro en la cascada. Para ganarle sin depender del orden, prefijamos
+   todas estas reglas con [data-sonner-toaster], que añade un atributo más de
+   especificidad sobre los selectores propios de Sonner. */
+/* El padding de Sonner vive en [data-sonner-toast][data-styled='true'], que es
+   más específico; igualamos ese nivel para reservar la franja del botón. */
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] {
+  box-shadow: 0 6px 20px rgba(49, 46, 129, 0.12); /* sombra teñida de indigo */
+  /* Reservamos una franja fija a la derecha para el botón de cerrar, así el
+     texto ocupa ~80% y no queda pegado al botón ni al divisor. */
+  padding-right: 48px;
+}
+
+[data-sonner-toaster] [data-sonner-toast] [data-title] {
+  font-weight: 600;
+}
+
+/* El acento de color va en el ícono, según el tipo de aviso. */
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-icon] { color: #059669; } /* success */
+[data-sonner-toaster] [data-sonner-toast][data-type='error']   [data-icon] { color: #dc2626; } /* danger */
+[data-sonner-toaster] [data-sonner-toast][data-type='info']    [data-icon] { color: #6366f1; } /* brand-500 */
+
+/* Botón de cerrar: por defecto Sonner lo pone arriba-izquierda con una regla
+   [dir='ltr'] de alta especificidad. Lo movemos a la derecha, centrado
+   verticalmente y dentro de la notificación, sin borde ni fondo. */
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-close-button] {
+  left: unset;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 24px;
   height: 24px;
+  background: transparent;
+  border: none;
+  color: #4338ca;        /* brand-700 */
 }
 
-[data-sonner-toast] [data-close-button] svg {
+/* Línea divisoria sutil a la izquierda del botón: marca la franja del botón
+   como una "sección" separada del contenido. Va en el ::before del botón
+   (libre) y no en el del toast, que Sonner usa para deslizar y apilar. */
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-close-button]::before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 26px;
+  background: #e0e7ff;   /* brand-100 */
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled='true']:hover [data-close-button]:hover {
+  background: #e0e7ff;   /* brand-100 */
+  border: none;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-close-button] svg {
   width: 15px;
   height: 15px;
 }
