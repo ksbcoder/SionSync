@@ -94,7 +94,8 @@ CREATE TABLE programaciones (
 -- Responsables asignados a una programación en una fecha
 CREATE TABLE responsables_programacion (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  programacion_id uuid NOT NULL REFERENCES programaciones(id) ON DELETE CASCADE,
+  -- RESTRICT: no se puede borrar una programación que tenga responsables.
+  programacion_id uuid NOT NULL REFERENCES programaciones(id) ON DELETE RESTRICT,
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   asignado_por uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   fecha date NOT NULL,
