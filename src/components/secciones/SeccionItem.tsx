@@ -46,18 +46,18 @@ export function SeccionItem({
 
   return (
     <>
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className={`bg-white rounded-xl border overflow-hidden ${companeras.length > 0 ? 'border-violet-300' : 'border-gray-200'}`}>
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <SeccionBadge tipo={seccion.tipo} />
-              {notas.length > 0 && (
-                <>
-                  <div className="w-px h-4 bg-gray-200 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <NotasDisplay notas={notas} />
-                  </div>
-                </>
+              {companeras.length > 0 && (
+                <span
+                  className="shrink-0 inline-flex items-center justify-center rounded-full bg-violet-100 text-violet-700 p-1"
+                  title={`A la vez con: ${companeras.join(', ')}`}
+                >
+                  <Users className="w-3.5 h-3.5" />
+                </span>
               )}
             </div>
             {canEdit && (
@@ -66,38 +66,37 @@ export function SeccionItem({
                   onClick={onMoveUp}
                   disabled={!canMoveUp}
                   title="Mover arriba"
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                  className="min-h-[44px] min-w-[36px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
                 >
-                  <ChevronUp className="w-5 h-5" />
+                  <ChevronUp className="w-[18px] h-[18px]" />
                 </button>
                 <button
                   onClick={onMoveDown}
                   disabled={!canMoveDown}
                   title="Mover abajo"
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                  className="min-h-[44px] min-w-[36px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
                 >
-                  <ChevronDown className="w-5 h-5" />
+                  <ChevronDown className="w-[18px] h-[18px]" />
                 </button>
                 <button
                   onClick={() => { onDuplicate(); }}
                   title="Duplicar"
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
+                  className="min-h-[44px] min-w-[36px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
                 >
-                  <Copy className="w-5 h-5" />
+                  <Copy className="w-[18px] h-[18px]" />
                 </button>
                 <button
                   onClick={() => setMenuOpen(true)}
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
+                  className="min-h-[44px] min-w-[36px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
                 >
-                  <MoreVertical className="w-5 h-5" />
+                  <MoreVertical className="w-[18px] h-[18px]" />
                 </button>
               </div>
             )}
           </div>
-          {companeras.length > 0 && (
-            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-violet-100 text-violet-800 px-2.5 py-1 text-xs font-medium">
-              <Users className="w-3.5 h-3.5 shrink-0" />
-              <span>A la vez con: {companeras.join(', ')}</span>
+          {notas.length > 0 && (
+            <div className="mb-3">
+              <NotasDisplay notas={notas} />
             </div>
           )}
           <p className="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap">{seccion.letra}</p>

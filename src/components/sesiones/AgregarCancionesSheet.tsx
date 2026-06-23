@@ -120,7 +120,7 @@ export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, 
                     {cancion.autor ? (
                       <span className="block text-xs text-gray-400 break-words">{cancion.autor}</span>
                     ) : (
-                      cancion.descripcion && <span className="block text-xs text-gray-400 italic break-words">{cancion.descripcion}</span>
+                      cancion.descripcion && <span className="block text-xs text-gray-400 italic break-words line-clamp-2">{cancion.descripcion}</span>
                     )}
                   </span>
                   <span className="flex items-center gap-2 shrink-0">

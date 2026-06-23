@@ -194,7 +194,7 @@ export function ProgramacionHome() {
       />
 
       {canGestionarProgramacion && !mostrandoInactivas && (
-        <div className="px-4 max-w-lg mx-auto w-full">
+        <div className="px-4 max-w-lg mx-auto w-full flex justify-end">
           <button
             onClick={() => setDuplicarOpen(true)}
             disabled={asignacionesActivasSemana === 0}

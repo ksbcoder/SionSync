@@ -34,26 +34,30 @@ export function CancionCard({ cancion, onDelete }: CancionCardProps) {
   return (
     <SwipeableCard actions={actions}>
       <div
-        className="bg-white p-4 cursor-pointer active:bg-indigo-50"
+        className="bg-white p-4 cursor-pointer active:bg-indigo-50 overflow-hidden flex items-center justify-between gap-2"
         onClick={() => navigate(`/cancion/${cancion.id}`)}
       >
-        <h3 className="font-semibold text-lg text-gray-900 leading-tight">{cancion.titulo}</h3>
-        <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-lg text-gray-900 leading-tight break-words">{cancion.titulo}</h3>
           {cancion.autor ? (
-            <span>{cancion.autor}</span>
+            <p className="mt-1 text-sm text-gray-500 break-words">{cancion.autor}</p>
           ) : (
-            cancion.descripcion && <span className="italic">{cancion.descripcion}</span>
+            cancion.descripcion && <p className="mt-1 text-sm text-gray-500 italic break-words line-clamp-2">{cancion.descripcion}</p>
           )}
-          {(cancion.autor || cancion.descripcion) && (cancion.tonalidad || cancion.tempo) && (
-            <span className="w-px h-4 bg-gray-300 self-center" aria-hidden="true" />
-          )}
-          {cancion.tonalidad && (
-            <span className="bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full text-xs font-medium">
-              {cancion.tonalidad}
-            </span>
-          )}
-          {cancion.tempo && <span>{cancion.tempo} BPM</span>}
         </div>
+        {(cancion.tonalidad || cancion.tempo) && (
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="w-px h-8 bg-gray-200 self-center" aria-hidden="true" />
+            <div className="flex flex-col items-center justify-center gap-1 text-gray-500">
+              {cancion.tonalidad && (
+                <span className="bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full text-xs font-medium">
+                  {cancion.tonalidad}
+                </span>
+              )}
+              {cancion.tempo && <span className="text-xs">{cancion.tempo} BPM</span>}
+            </div>
+          </div>
+        )}
       </div>
     </SwipeableCard>
   );
