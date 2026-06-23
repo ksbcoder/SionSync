@@ -30,15 +30,15 @@ export function useCancionDetalle(id: string | undefined) {
     return deleteCancion(id);
   }, [id, deleteCancion]);
 
-  const agregarSeccion = useCallback(async (data: { tipo: TipoSeccion; letra: string }) => {
+  const agregarSeccion = useCallback(async (data: { tipo: TipoSeccion; letra: string; descripcion: string | null }) => {
     if (!id || !cancion) return;
     const orden = calcularSiguienteOrden(cancion.secciones ?? []);
-    const nueva = await addSeccion({ cancion_id: id, tipo: data.tipo, letra: data.letra, orden });
+    const nueva = await addSeccion({ cancion_id: id, tipo: data.tipo, letra: data.letra, descripcion: data.descripcion, orden });
     if (nueva) setCancion(c => c ? { ...c, secciones: [...(c.secciones ?? []), { ...nueva, notas: [] }] } : c);
   }, [id, cancion, addSeccion]);
 
   // Aplica el cambio en pantalla al instante; si el servidor falla, revierte.
-  const editarSeccion = useCallback(async (seccionId: string, data: { tipo: TipoSeccion; letra: string }) => {
+  const editarSeccion = useCallback(async (seccionId: string, data: { tipo: TipoSeccion; letra: string; descripcion: string | null }) => {
     const previo = cancion;
     setCancion(c => c ? { ...c, secciones: c.secciones?.map(s => s.id === seccionId ? { ...s, ...data } : s) } : c);
     const ok = await updateSeccion(seccionId, data);
@@ -70,6 +70,48 @@ export function useCancionDetalle(id: string | undefined) {
     const ok = await reordenarSecciones(newOrdenes);
     if (!ok) setCancion(previo);
   }, [cancion, reordenarSecciones]);
+
+  // Marca qué secciones se cantan AL MISMO TIEMPO que 'seccionId'. Las que
+  // comparten 'grupo_simultaneo' forman un grupo. Si el grupo final queda con
+  // menos de 2 miembros, se deshace (un grupo de una sola sección no tiene sentido).
+  const vincularSimultaneas = useCallback(async (seccionId: string, idsSeleccionadas: string[]) => {
+    if (!cancion) return;
+    const secciones = cancion.secciones ?? [];
+    const actual = secciones.find(s => s.id === seccionId);
+    if (!actual) return;
+
+    const grupoId = actual.grupo_simultaneo ?? crypto.randomUUID();
+    const miembros = new Set([seccionId, ...idsSeleccionadas]);
+
+    // 1) Valor tentativo de grupo para cada sección.
+    const final = new Map<string, string | null>();
+    for (const s of secciones) {
+      if (miembros.has(s.id)) {
+        final.set(s.id, grupoId);
+      } else if (actual.grupo_simultaneo && s.grupo_simultaneo === actual.grupo_simultaneo) {
+        // Estaba en este grupo y ahora se deseleccionó: sale del grupo.
+        final.set(s.id, null);
+      } else {
+        final.set(s.id, s.grupo_simultaneo ?? null);
+      }
+    }
+
+    // 2) Cualquier grupo que quede con un solo miembro se deshace.
+    const conteo = new Map<string, number>();
+    for (const g of final.values()) if (g) conteo.set(g, (conteo.get(g) ?? 0) + 1);
+    for (const [sid, g] of final) if (g && conteo.get(g) === 1) final.set(sid, null);
+
+    // 3) Persistir solo las secciones cuyo grupo cambió (optimista).
+    const cambios = secciones.filter(s => (s.grupo_simultaneo ?? null) !== (final.get(s.id) ?? null));
+    if (cambios.length === 0) return;
+
+    const previo = cancion;
+    setCancion(c => c ? { ...c, secciones: c.secciones?.map(s => ({ ...s, grupo_simultaneo: final.get(s.id) ?? null })) } : c);
+    for (const s of cambios) {
+      const ok = await updateSeccion(s.id, { grupo_simultaneo: final.get(s.id) ?? null });
+      if (!ok) { setCancion(previo); return; }
+    }
+  }, [cancion, updateSeccion]);
 
   const duplicar = useCallback(async (seccionId: string) => {
     if (!cancion) return;
@@ -126,6 +168,7 @@ export function useCancionDetalle(id: string | undefined) {
     eliminarSeccion,
     moverSeccion,
     duplicar,
+    vincularSimultaneas,
     agregarNota,
     editarNota,
     eliminarNota,

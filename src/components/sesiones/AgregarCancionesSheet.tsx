@@ -115,11 +115,23 @@ export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, 
                     selected ? 'bg-brand-50 border-2 border-brand-300' : 'hover:bg-gray-50 border border-gray-200'
                   }`}
                 >
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium text-gray-800 truncate">{cancion.titulo}</span>
-                    {cancion.autor && <span className="block text-xs text-gray-400 truncate">{cancion.autor}</span>}
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm font-medium text-gray-800 break-words">{cancion.titulo}</span>
+                    {cancion.autor ? (
+                      <span className="block text-xs text-gray-400 break-words">{cancion.autor}</span>
+                    ) : (
+                      cancion.descripcion && <span className="block text-xs text-gray-400 italic break-words">{cancion.descripcion}</span>
+                    )}
                   </span>
-                  {selected && <Check className="w-5 h-5 text-brand-700 shrink-0" />}
+                  <span className="flex items-center gap-2 shrink-0">
+                    {cancion.tonalidad && <span className="w-px h-8 bg-gray-200 self-center" aria-hidden="true" />}
+                    {cancion.tonalidad && (
+                      <span className="bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full text-xs font-medium">
+                        {cancion.tonalidad}
+                      </span>
+                    )}
+                    {selected && <Check className="w-5 h-5 text-brand-700" />}
+                  </span>
                 </button>
               );
             })}

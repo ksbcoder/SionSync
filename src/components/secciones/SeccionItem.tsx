@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MoreVertical, ChevronUp, ChevronDown, Trash2, Pencil, Music, Copy } from 'lucide-react';
+import { MoreVertical, ChevronUp, ChevronDown, Trash2, Pencil, Music, Copy, Users } from 'lucide-react';
 import { SeccionBadge } from './SeccionBadge';
 import { NotasDisplay } from '../notas/NotasDisplay';
 import { BottomSheet } from '../layout/BottomSheet';
@@ -16,10 +16,14 @@ interface SeccionItemProps {
   onMoveDown: () => void;
   onDelete: () => void;
   onDuplicate: () => Promise<void>;
-  onUpdate: (data: { tipo: TipoSeccion; letra: string }) => Promise<void>;
+  onUpdate: (data: { tipo: TipoSeccion; letra: string; descripcion: string | null }) => Promise<void>;
   onAddNota: (contenido: string) => Promise<void>;
   onUpdateNota: (id: string, contenido: string) => Promise<void>;
   onDeleteNota: (id: string) => Promise<void>;
+  /** Abre el selector de secciones simultáneas. */
+  onSimultanea: () => void;
+  /** Etiquetas de las otras secciones que se cantan a la vez que esta. */
+  companeras: string[];
 }
 
 const menuItemBase = 'w-full min-h-[48px] flex items-center gap-3 px-4 rounded-xl text-sm font-medium transition-colors';
@@ -28,6 +32,7 @@ export function SeccionItem({
   seccion, canEdit, canMoveUp, canMoveDown,
   onMoveUp, onMoveDown, onDelete, onDuplicate, onUpdate,
   onAddNota, onUpdateNota, onDeleteNota,
+  onSimultanea, companeras,
 }: SeccionItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -58,11 +63,20 @@ export function SeccionItem({
             {canEdit && (
               <div className="flex items-center shrink-0">
                 <button
-                  onClick={() => setNotasOpen(true)}
-                  title="Acordes / Notas"
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-chord-dark hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={onMoveUp}
+                  disabled={!canMoveUp}
+                  title="Mover arriba"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
                 >
-                  <Music className="w-5 h-5" />
+                  <ChevronUp className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={onMoveDown}
+                  disabled={!canMoveDown}
+                  title="Mover abajo"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                >
+                  <ChevronDown className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => { onDuplicate(); }}
@@ -80,7 +94,16 @@ export function SeccionItem({
               </div>
             )}
           </div>
+          {companeras.length > 0 && (
+            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-violet-100 text-violet-800 px-2.5 py-1 text-xs font-medium">
+              <Users className="w-3.5 h-3.5 shrink-0" />
+              <span>A la vez con: {companeras.join(', ')}</span>
+            </div>
+          )}
           <p className="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap">{seccion.letra}</p>
+          {seccion.descripcion && (
+            <p className="mt-3 text-sm text-gray-500 italic whitespace-pre-wrap">{seccion.descripcion}</p>
+          )}
         </div>
       </div>
 
@@ -90,13 +113,13 @@ export function SeccionItem({
             <Pencil className="w-5 h-5 text-brand-500" />
             Editar sección
           </button>
-          <button onClick={() => closeAndRun(onMoveUp)} disabled={!canMoveUp} className={`${menuItemBase} text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none`}>
-            <ChevronUp className="w-5 h-5 text-gray-500" />
-            Mover arriba
+          <button onClick={() => closeAndRun(() => setNotasOpen(true))} className={`${menuItemBase} text-gray-700 hover:bg-gray-50`}>
+            <Music className="w-5 h-5 text-chord-dark" />
+            Acordes / Notas
           </button>
-          <button onClick={() => closeAndRun(onMoveDown)} disabled={!canMoveDown} className={`${menuItemBase} text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none`}>
-            <ChevronDown className="w-5 h-5 text-gray-500" />
-            Mover abajo
+          <button onClick={() => closeAndRun(onSimultanea)} className={`${menuItemBase} text-gray-700 hover:bg-gray-50`}>
+            <Users className="w-5 h-5 text-violet-500" />
+            Cantar al mismo tiempo
           </button>
           <button onClick={() => closeAndRun(onDelete)} className={`${menuItemBase} text-red-500 hover:bg-red-50`}>
             <Trash2 className="w-5 h-5" />

@@ -98,8 +98,12 @@ export function SesionPresentacion() {
         </div>
       </div>
 
-      {cancion.tempo && (
-        <p className="text-stage-muted text-sm text-center pb-2 shrink-0">{cancion.tempo} BPM</p>
+      {cancion.tonalidad && (
+        <div className="flex justify-center pb-3 shrink-0">
+          <span className="inline-flex items-center justify-center min-w-[2.75rem] px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-200 font-bold text-xl leading-none tracking-wide ring-1 ring-indigo-400/40">
+            {cancion.tonalidad}
+          </span>
+        </div>
       )}
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 pb-8">

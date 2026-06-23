@@ -27,6 +27,7 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
 
   const [titulo, setTitulo] = useState(cancionExistente?.titulo ?? '');
   const [autor, setAutor] = useState(cancionExistente?.autor ?? '');
+  const [descripcion, setDescripcion] = useState(cancionExistente?.descripcion ?? '');
   const [tonalidad, setTonalidad] = useState(cancionExistente?.tonalidad ?? '');
   const [tempo, setTempo] = useState<string>(cancionExistente?.tempo?.toString() ?? '');
 
@@ -48,6 +49,7 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
     const data = {
       titulo: titulo.trim(),
       autor: autor.trim() || null,
+      descripcion: descripcion.trim() || null,
       tonalidad: tonalidad || null,
       tempo: tempoNum,
     };
@@ -117,6 +119,16 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
             placeholder="Nombre del autor"
             value={autor}
             onChange={e => setAutor(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <textarea
+            className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base leading-relaxed resize-none"
+            rows={2}
+            placeholder="Opcional. Se muestra en la lista cuando la canción no tiene autor."
+            value={descripcion}
+            onChange={e => setDescripcion(e.target.value)}
           />
         </div>
 
