@@ -6,10 +6,9 @@ export const cancionRepository = {
   async getAll(): Promise<Cancion[]> {
     const { data, error } = await supabase
       .from('canciones')
-      .select('*')
-      .order('updated_at', { ascending: false });
+      .select('*');
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []).sort((a, b) => a.titulo.localeCompare(b.titulo));
   },
 
   async getById(id: string): Promise<Cancion> {

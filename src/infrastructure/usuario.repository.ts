@@ -51,7 +51,7 @@ export const usuarioRepository = {
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('*')
-      .order('created_at', { ascending: true });
+      .order('display_name', { ascending: true });
     if (profilesError) throw new Error(profilesError.message);
 
     const { data: userRoles, error: rolesError } = await supabase
@@ -59,10 +59,12 @@ export const usuarioRepository = {
       .select('*, roles(name, description)');
     if (rolesError) throw new Error(rolesError.message);
 
-    return (profiles ?? []).map(profile => ({
-      ...profile,
-      user_roles: (userRoles ?? []).filter(ur => ur.user_id === profile.id),
-    }));
+    return (profiles ?? [])
+      .map(profile => ({
+        ...profile,
+        user_roles: (userRoles ?? []).filter(ur => ur.user_id === profile.id),
+      }))
+      .sort((a, b) => (a.display_name ?? '').localeCompare(b.display_name ?? ''));
   },
 
   async toggleActive(userId: string, active: boolean): Promise<void> {

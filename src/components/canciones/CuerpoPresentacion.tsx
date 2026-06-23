@@ -1,5 +1,6 @@
 import { Users } from 'lucide-react';
 import { SeccionBadge } from '../secciones/SeccionBadge';
+import { Tooltip } from '../ui/Tooltip';
 import { NotasDisplay } from '../notas/NotasDisplay';
 import type { Cancion, Seccion } from '../../domain';
 
@@ -61,9 +62,11 @@ export function CuerpoPresentacion({ cancion }: { cancion: Cancion }) {
                 <SeccionContenido key={s.id} seccion={s} />
               ))}
             </div>
-            <div className="shrink-0 inline-flex items-center justify-center rounded-full bg-violet-500/20 text-violet-200 p-2" title="Se cantan a la vez">
-              <Users className="w-4 h-4 shrink-0" />
-            </div>
+            <Tooltip content={`Se cantan a la vez: ${item.miembros.map(m => m.tipo).join(', ')}`}>
+              <span className="shrink-0 inline-flex items-center justify-center rounded-full bg-violet-500/20 text-violet-200 p-2">
+                <Users className="w-4 h-4 shrink-0" />
+              </span>
+            </Tooltip>
           </div>
         )
       )}

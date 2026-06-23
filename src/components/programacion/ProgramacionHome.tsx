@@ -68,7 +68,9 @@ export function ProgramacionHome() {
   const puedeEditarProg = (prog: Programacion) => isAdmin || (canGestionarProgramacion && prog.user_id === user?.id);
 
   const mostrandoInactivas = canGestionarProgramacion && verInactivas;
-  const filtradas = todasProgramaciones.filter(p => p.activo === !mostrandoInactivas);
+  const filtradas = todasProgramaciones
+    .filter(p => p.activo === !mostrandoInactivas)
+    .sort((a, b) => (a.tipos_programacion?.nombre ?? '').localeCompare(b.tipos_programacion?.nombre ?? ''));
   const progsConResponsables = new Set(responsables.map(r => r.programacion_id));
   const programacionesVisibles = canGestionarProgramacion
     ? filtradas

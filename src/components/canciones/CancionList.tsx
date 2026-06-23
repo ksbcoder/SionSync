@@ -101,7 +101,7 @@ export function CancionList() {
             description={query ? `No se encontró "${query}"` : 'Agrega tu primera canción de alabanza'}
           />
         ) : (
-          <div className="flex flex-col gap-3 md:grid md:grid-cols-2">
+          <div className="flex flex-col gap-3">
             {canciones.map(c => (
               <CancionCard key={c.id} cancion={c} onDelete={(id) => setConfirmId(id)} />
             ))}

@@ -48,7 +48,7 @@ export function CancionCard({ cancion, onDelete }: CancionCardProps) {
         {(cancion.tonalidad || cancion.tempo) && (
           <div className="flex items-center gap-2 shrink-0">
             <span className="w-px h-8 bg-gray-200 self-center" aria-hidden="true" />
-            <div className="flex flex-col items-center justify-center gap-1 text-gray-500">
+            <div className="w-16 flex flex-col items-center justify-center gap-1 text-gray-500">
               {cancion.tonalidad && (
                 <span className="bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full text-xs font-medium">
                   {cancion.tonalidad}
