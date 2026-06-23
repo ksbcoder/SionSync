@@ -72,6 +72,11 @@ export default {
           '0%, 100%': { opacity: '1',   transform: 'scale(1)' },
           '50%':      { opacity: '0.5', transform: 'scale(0.85)' },
         },
+        // Aparición suave de los tooltips (solo opacidad, no toca transform).
+        'fade-in': {
+          '0%':   { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
       },
       animation: {
         'slide-up': 'slide-up 0.3s ease-out',
@@ -79,6 +84,7 @@ export default {
         'dot-bounce': 'dot-bounce 1.2s ease-in-out infinite',
         'shimmer': 'shimmer 1.5s ease-in-out infinite',
         'pulse-glow': 'pulse-glow 1.4s ease-in-out infinite',
+        'fade-in': 'fade-in 0.15s ease-out',
       },
     },
   },

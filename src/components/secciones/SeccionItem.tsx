@@ -5,6 +5,7 @@ import { NotasDisplay } from '../notas/NotasDisplay';
 import { BottomSheet } from '../layout/BottomSheet';
 import { SeccionForm } from './SeccionForm';
 import { NotasForm } from '../notas/NotasForm';
+import { Tooltip } from '../ui/Tooltip';
 import type { Seccion, TipoSeccion, Nota } from '../../domain';
 
 interface SeccionItemProps {
@@ -52,12 +53,11 @@ export function SeccionItem({
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <SeccionBadge tipo={seccion.tipo} />
               {companeras.length > 0 && (
-                <span
-                  className="shrink-0 inline-flex items-center justify-center rounded-full bg-violet-100 text-violet-700 p-1"
-                  title={`A la vez con: ${companeras.join(', ')}`}
-                >
-                  <Users className="w-3.5 h-3.5" />
-                </span>
+                <Tooltip content={`Se canta a la vez con: ${companeras.join(', ')}`}>
+                  <span className="shrink-0 inline-flex items-center justify-center rounded-full bg-violet-100 text-violet-700 p-1">
+                    <Users className="w-3.5 h-3.5" />
+                  </span>
+                </Tooltip>
               )}
             </div>
             {canEdit && (
