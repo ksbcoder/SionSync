@@ -13,7 +13,7 @@ export function useSecciones() {
   );
 
   const updateSeccion = useCallback(
-    (id: string, data: Partial<Pick<SeccionInsert, 'tipo' | 'letra'>>): Promise<Seccion | null> =>
+    (id: string, data: Partial<Pick<SeccionInsert, 'tipo' | 'letra' | 'descripcion' | 'grupo_simultaneo'>>): Promise<Seccion | null> =>
       run(() => seccionRepository.update(id, data)),
     [run]
   );
@@ -41,6 +41,7 @@ export function useSecciones() {
           cancion_id: seccion.cancion_id,
           tipo: seccion.tipo,
           letra: seccion.letra,
+          descripcion: seccion.descripcion,
           orden: ordenSiguiente,
         });
 

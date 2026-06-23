@@ -4,6 +4,7 @@ export interface Cancion {
   id: string;
   titulo: string;
   autor: string | null;
+  descripcion: string | null;
   tonalidad: string | null;
   tempo: number | null;
   user_id: string;
@@ -16,6 +17,7 @@ export interface Cancion {
 export interface CancionInsert {
   titulo: string;
   autor?: string | null;
+  descripcion?: string | null;
   tonalidad?: string | null;
   tempo?: number | null;
 }

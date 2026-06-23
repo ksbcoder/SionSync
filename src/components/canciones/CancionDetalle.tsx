@@ -10,7 +10,9 @@ import { BottomSheet } from '../layout/BottomSheet';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { SwipeableCard } from '../ui/SwipeableCard';
 import { SeccionForm } from '../secciones/SeccionForm';
+import { SeccionSimultaneaSheet } from '../secciones/SeccionSimultaneaSheet';
 import { DotLoader } from '../ui/DotLoader';
+import { TIPOS_SECCION } from '../../domain';
 
 export function CancionDetalle() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +27,7 @@ export function CancionDetalle() {
     eliminarCancion, agregarSeccion, editarSeccion,
     eliminarSeccion, moverSeccion, duplicar,
     agregarNota, editarNota, eliminarNota,
+    vincularSimultaneas,
   } = useCancionDetalle(id);
   const { showToast } = useToast();
 
@@ -32,6 +35,7 @@ export function CancionDetalle() {
   const [addSeccionOpen, setAddSeccionOpen] = useState(false);
   const [confirmCancion, setConfirmCancion] = useState(false);
   const [confirmSeccionId, setConfirmSeccionId] = useState<string | null>(null);
+  const [simultaneaSeccionId, setSimultaneaSeccionId] = useState<string | null>(null);
   const [detallesOpen, setDetallesOpen] = useState(false);
   const [creadorNombre, setCreadorNombre] = useState<string | null>(null);
   const [modificadorNombre, setModificadorNombre] = useState<string | null>(null);
@@ -106,7 +110,13 @@ export function CancionDetalle() {
       )}
 
       <main className="px-4 py-4 flex flex-col gap-3 max-w-2xl mx-auto">
-        {secciones.map((seccion, idx) => (
+        {secciones.map((seccion, idx) => {
+          const companeras = seccion.grupo_simultaneo
+            ? secciones
+                .filter(s => s.id !== seccion.id && s.grupo_simultaneo === seccion.grupo_simultaneo)
+                .map(s => TIPOS_SECCION[s.tipo].label)
+            : [];
+          return (
           <SwipeableCard
             key={seccion.id}
             className="rounded-xl"
@@ -129,9 +139,12 @@ export function CancionDetalle() {
               onAddNota={(contenido) => agregarNota(seccion.id, contenido)}
               onUpdateNota={editarNota}
               onDeleteNota={eliminarNota}
+              onSimultanea={() => setSimultaneaSeccionId(seccion.id)}
+              companeras={companeras}
             />
           </SwipeableCard>
-        ))}
+          );
+        })}
       </main>
 
       {canEdit && (
@@ -241,6 +254,20 @@ export function CancionDetalle() {
         title="¿Eliminar esta sección?"
         description="Esta acción no se puede deshacer."
       />
+
+      {simultaneaSeccionId && (() => {
+        const seccion = secciones.find(s => s.id === simultaneaSeccionId);
+        if (!seccion) return null;
+        return (
+          <SeccionSimultaneaSheet
+            isOpen
+            onClose={() => setSimultaneaSeccionId(null)}
+            seccion={seccion}
+            secciones={secciones}
+            onGuardar={(ids) => vincularSimultaneas(seccion.id, ids)}
+          />
+        );
+      })()}
     </div>
   );
 }

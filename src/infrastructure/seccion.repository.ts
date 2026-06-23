@@ -18,7 +18,7 @@ export const seccionRepository = {
     if (error) throw new Error(error.message);
   },
 
-  async update(id: string, data: Partial<Pick<SeccionInsert, 'tipo' | 'letra'>>): Promise<Seccion> {
+  async update(id: string, data: Partial<Pick<SeccionInsert, 'tipo' | 'letra' | 'descripcion' | 'grupo_simultaneo'>>): Promise<Seccion> {
     const { data: updated, error } = await supabase
       .from('secciones')
       .update(data)

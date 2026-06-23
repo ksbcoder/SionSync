@@ -8,6 +8,9 @@ export interface Seccion {
   tipo: TipoSeccion;
   orden: number;
   letra: string;
+  descripcion: string | null;
+  /** Secciones con el mismo valor se cantan al mismo tiempo. NULL = no simultánea. */
+  grupo_simultaneo: string | null;
   created_at: string;
   notas?: Nota[];
 }
@@ -17,6 +20,8 @@ export interface SeccionInsert {
   tipo: TipoSeccion;
   orden: number;
   letra: string;
+  descripcion?: string | null;
+  grupo_simultaneo?: string | null;
 }
 
 // Una sección tal como la propone la IA, antes de guardarla (sin id ni canción).
