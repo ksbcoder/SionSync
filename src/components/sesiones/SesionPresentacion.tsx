@@ -31,8 +31,9 @@ export function SesionPresentacion() {
     return () => { cancelado = true; };
   }, [id, getSesion, getCancion]);
 
-  // Al cambiar de canción, volvemos el contenido al inicio.
-  useEffect(() => { reiniciar(); }, [indice, reiniciar]);
+  // Al cambiar de canción, volvemos el contenido al inicio y apagamos el
+  // auto-scroll para que cada canción empiece pausada.
+  useEffect(() => { reiniciar(); setAutoScroll(false); }, [indice, reiniciar, setAutoScroll]);
 
   if (!canciones) {
     return (
