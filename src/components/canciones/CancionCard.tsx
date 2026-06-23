@@ -40,6 +40,9 @@ export function CancionCard({ cancion, onDelete }: CancionCardProps) {
         <h3 className="font-semibold text-lg text-gray-900 leading-tight">{cancion.titulo}</h3>
         <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 flex-wrap">
           {cancion.autor && <span>{cancion.autor}</span>}
+          {cancion.autor && (cancion.tonalidad || cancion.tempo) && (
+            <span className="w-px h-4 bg-gray-300 self-center" aria-hidden="true" />
+          )}
           {cancion.tonalidad && (
             <span className="bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full text-xs font-medium">
               {cancion.tonalidad}
