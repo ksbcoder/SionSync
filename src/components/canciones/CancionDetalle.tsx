@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, MoreVertical, Plus, Presentation, Trash2, Pencil, Info } from 'lucide-react';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useCancionDetalle } from '../../hooks/useCancionDetalle';
@@ -17,6 +17,7 @@ import { TIPOS_SECCION } from '../../domain';
 export function CancionDetalle() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   // Si llegamos desde una sesión (al crear una canción nueva), volver regresa a
   // esa sesión en vez de al catálogo.
@@ -40,6 +41,14 @@ export function CancionDetalle() {
   const [creadorNombre, setCreadorNombre] = useState<string | null>(null);
   const [modificadorNombre, setModificadorNombre] = useState<string | null>(null);
   const canEdit = useCanEdit(cancion?.user_id);
+
+  // Al volver desde "Editar canción" (con Cancelar), reabrir el menú de opciones.
+  useEffect(() => {
+    if (location.state?.abrirMenu) {
+      setMenuOpen(true);
+      navigate(`${location.pathname}${location.search}`, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     if (!cancion?.user_id) return;
@@ -162,7 +171,7 @@ export function CancionDetalle() {
         <div className="flex flex-col gap-2">
           {canEdit && (
             <button
-              onClick={() => { navigate(`/cancion/${id}/editar`); setMenuOpen(false); }}
+              onClick={() => { navigate(`/cancion/${id}/editar`, { state: { volverAlMenu: true } }); setMenuOpen(false); }}
               className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
             >
               <Pencil className="w-5 h-5 text-brand-700" />
@@ -207,7 +216,7 @@ export function CancionDetalle() {
         </div>
       </BottomSheet>
 
-      <BottomSheet isOpen={detallesOpen} onClose={() => setDetallesOpen(false)} title="Detalles">
+      <BottomSheet isOpen={detallesOpen} onClose={() => { setDetallesOpen(false); setMenuOpen(true); }} title="Detalles">
         <div className="flex flex-col gap-4 text-sm">
           <div>
             <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Creado por</p>

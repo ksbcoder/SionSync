@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Check, X } from 'lucide-react';
 import { useCanciones } from '../../hooks/useCanciones';
 import { useSesiones } from '../../hooks/useSesiones';
@@ -16,8 +16,19 @@ interface CancionFormProps {
 
 export function CancionForm({ cancionExistente }: CancionFormProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
+
+  // Si se llegó aquí desde el menú de opciones (Editar canción), al cancelar/volver
+  // se regresa al detalle reabriendo ese mismo menú.
+  const volver = () => {
+    if (location.state?.volverAlMenu && id) {
+      navigate(`/cancion/${id}`, { state: { abrirMenu: true } });
+    } else {
+      navigate(-1);
+    }
+  };
   // Si venimos desde una sesión, al crear la canción se agrega a esa sesión.
   const sesionId = searchParams.get('sesion');
   const { createCancion, updateCancion, loading } = useCanciones();
@@ -91,7 +102,7 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
     <div className="min-h-svh bg-gray-50 flex flex-col">
       <header className="sticky top-0 bg-white border-b border-gray-200 flex items-center gap-3 px-4 py-3 z-10">
         <button
-          onClick={() => navigate(-1)}
+          onClick={volver}
           className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-xl"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -121,16 +132,6 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
             onChange={e => setAutor(e.target.value)}
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-          <textarea
-            className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base leading-relaxed resize-none"
-            rows={2}
-            placeholder="Opcional. Se muestra en la lista cuando la canción no tiene autor."
-            value={descripcion}
-            onChange={e => setDescripcion(e.target.value)}
-          />
-        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tonalidad</label>
@@ -153,6 +154,16 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
             onChange={e => setTempo(e.target.value)}
             min="40"
             max="300"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <textarea
+            className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base leading-relaxed resize-none"
+            rows={2}
+            placeholder="Opcional. Se muestra en la lista cuando la canción no tiene autor."
+            value={descripcion}
+            onChange={e => setDescripcion(e.target.value)}
           />
         </div>
 
@@ -192,7 +203,7 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
           <TouchButton variant="primary" fullWidth onClick={handleSubmit} disabled={loading || !titulo.trim()}>
             {loading ? 'Guardando...' : 'Guardar'}
           </TouchButton>
-          <TouchButton variant="secondary" fullWidth onClick={() => navigate(-1)}>
+          <TouchButton variant="secondary" fullWidth onClick={volver}>
             Cancelar
           </TouchButton>
         </div>
