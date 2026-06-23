@@ -19,8 +19,8 @@ export function CancionDetalle() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  // Si llegamos desde una sesión (al crear una canción nueva), volver regresa a
-  // esa sesión en vez de al catálogo.
+  // Si llegamos desde una sesión (al abrir una canción de la lista o al crear
+  // una nueva), volver regresa a esa sesión en vez de al catálogo.
   const sesionOrigen = searchParams.get('sesion');
   const rutaVolver = sesionOrigen ? `/sesion/${sesionOrigen}` : '/canciones';
   const {

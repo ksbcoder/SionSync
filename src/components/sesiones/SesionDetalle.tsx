@@ -89,7 +89,7 @@ export function SesionDetalle() {
             <div key={sc.id} className="bg-white rounded-xl border border-gray-100 flex items-center gap-2 pr-2">
               <button
                 className="flex-1 min-w-0 flex items-center gap-3 p-3 text-left active:bg-indigo-50 rounded-l-xl"
-                onClick={() => navigate(`/cancion/${sc.cancion_id}`)}
+                onClick={() => navigate(`/cancion/${sc.cancion_id}?sesion=${id}`)}
               >
                 <span className="w-6 h-6 shrink-0 flex items-center justify-center rounded-full bg-brand-100 text-brand-700 text-xs font-semibold">
                   {idx + 1}
