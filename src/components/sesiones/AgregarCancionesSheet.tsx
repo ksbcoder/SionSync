@@ -126,8 +126,10 @@ export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, 
                   <span className="flex items-center gap-2 shrink-0">
                     {cancion.tonalidad && <span className="w-px h-8 bg-gray-200 self-center" aria-hidden="true" />}
                     {cancion.tonalidad && (
-                      <span className="bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full text-xs font-medium">
-                        {cancion.tonalidad}
+                      <span className="w-12 flex justify-center">
+                        <span className="bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full text-xs font-medium">
+                          {cancion.tonalidad}
+                        </span>
                       </span>
                     )}
                     {selected && <Check className="w-5 h-5 text-brand-700" />}
