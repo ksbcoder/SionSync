@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Check, Calendar } from 'lucide-react';
 import { BottomSheet } from '../layout/BottomSheet';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import { useResponsables } from '../../hooks/useProgramaciones';
 import { useToast } from '../../hooks/useToast';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
@@ -127,7 +127,7 @@ export function AsignarResponsableSheet({ isOpen, onClose, programacion, fechaIn
         </div>
 
         {loading ? (
-          <DotLoader text="Cargando..." />
+          <OrbeLoader text="Cargando..." />
         ) : usuarios.length === 0 ? (
           <p className="text-sm text-gray-400 py-4 text-center">No hay usuarios activos</p>
         ) : (

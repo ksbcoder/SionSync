@@ -10,7 +10,7 @@ import { useToast } from '../../hooks/useToast';
 import { BottomSheet } from '../layout/BottomSheet';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { EmptyState } from '../ui/EmptyState';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import { SesionFormSheet } from './SesionFormSheet';
 import { AgregarCancionesSheet } from './AgregarCancionesSheet';
 import { formatFecha } from '../../domain';
@@ -34,7 +34,7 @@ export function SesionDetalle() {
   useRealtime(['sesiones', 'sesion_canciones', 'canciones'], cargar);
   useRecargarAlVolver(cargar);
 
-  if (loading && !sesion) return <DotLoader text="Cargando sesión..." />;
+  if (loading && !sesion) return <OrbeLoader text="Cargando sesión..." />;
 
   if (!sesion) {
     return (

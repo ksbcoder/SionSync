@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BottomSheet } from '../layout/BottomSheet';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import { useProgramaciones } from '../../hooks/useProgramaciones';
 import { useToast } from '../../hooks/useToast';
 import type { TipoProgramacion, Programacion } from '../../domain';
@@ -40,7 +40,7 @@ export function CrearProgramacionSheet({ isOpen, onClose, programacionesExistent
     <BottomSheet isOpen={isOpen} onClose={onClose} title="Nueva programación">
       <div className="flex flex-col gap-2">
         {loadingTipos ? (
-          <DotLoader text="Cargando tipos..." />
+          <OrbeLoader text="Cargando tipos..." />
         ) : tiposDisponibles.length === 0 ? (
           <p className="text-sm text-gray-400 py-4 text-center">Ya existen programaciones para todos los tipos</p>
         ) : (

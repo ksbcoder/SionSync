@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Search, X, Plus } from 'lucide-react';
 import { BottomSheet } from '../layout/BottomSheet';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
+import { OrbePensante } from '../ui/OrbePensante';
 import { useCanciones } from '../../hooks/useCanciones';
 import { useRoles } from '../../hooks/useRoles';
 import { useToast } from '../../hooks/useToast';
@@ -98,7 +99,7 @@ export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, 
         </div>
 
         {loading && !catalogo.length ? (
-          <DotLoader text="Cargando catálogo..." />
+          <OrbeLoader text="Cargando catálogo..." />
         ) : disponibles.length === 0 ? (
           <p className="text-sm text-gray-400 py-4 text-center">
             {query ? `No se encontró "${query}"` : 'No hay más canciones en el catálogo para agregar'}
@@ -143,8 +144,11 @@ export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, 
         <button
           onClick={handleAgregar}
           disabled={guardando || seleccionados.size === 0}
-          className="w-full min-h-[44px] rounded-lg bg-brand-500 text-white font-medium text-sm hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full min-h-[44px] rounded-lg bg-brand-500 text-white font-medium text-sm hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
+          {guardando && (
+            <OrbePensante state="working" size={20} tono="sobre-indigo" label="Agregando..." />
+          )}
           {guardando
             ? 'Agregando...'
             : seleccionados.size > 0

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { programacionRepository } from '../../infrastructure/programacion.repository';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import { useToast } from '../../hooks/useToast';
 import { COLORES_TIPO_PROGRAMACION } from '../../domain';
 import type { TipoProgramacion } from '../../domain';
@@ -167,7 +167,7 @@ export function TiposProgramacionList() {
         )}
 
         {loading ? (
-          <DotLoader text="Cargando tipos..." />
+          <OrbeLoader text="Cargando tipos..." />
         ) : tipos.length === 0 ? (
           <p className="text-sm text-gray-400 text-center py-8">No hay tipos de programación</p>
         ) : (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Copy, CalendarRange } from 'lucide-react';
 import { BottomSheet } from '../layout/BottomSheet';
+import { OrbePensante } from '../ui/OrbePensante';
 import { useResponsables } from '../../hooks/useProgramaciones';
 import { useToast } from '../../hooks/useToast';
 import { formatFecha, sumarDias } from '../../domain';
@@ -113,7 +114,11 @@ export function DuplicarSemanaSheet({
           disabled={!puedeDuplicar}
           className="w-full min-h-[44px] rounded-lg bg-brand-500 text-white font-medium text-sm hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          <Copy className="w-4 h-4" />
+          {copiando ? (
+            <OrbePensante state="working" size={20} tono="sobre-indigo" label="Duplicando..." />
+          ) : (
+            <Copy className="w-4 h-4" />
+          )}
           {copiando ? 'Duplicando...' : 'Duplicar semana'}
         </button>
       </div>

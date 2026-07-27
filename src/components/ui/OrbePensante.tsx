@@ -7,33 +7,51 @@ import { MODE_DRAWS, resolvePreset, type OrbState } from 'thinking-orbs';
 // resultado: cada punto conserva su gris original como medida de profundidad y
 // ese gris se traduce a un tono de nuestra paleta indigo.
 
-// Extremos de la rampa: los puntos cercanos (gris oscuro) salen brand-900 y los
-// lejanos (gris claro) brand-100, así se mantiene la sensación de profundidad.
-const CERCA = [0x31, 0x2e, 0x81] as const; // #312e81 brand-900
-const LEJOS = [0xe0, 0xe7, 0xff] as const; // #e0e7ff brand-100
+// Extremos de cada rampa: el primer color es para los puntos cercanos (gris
+// oscuro en el original) y el segundo para los lejanos (gris claro). Sobre
+// fondo claro se usa indigo oscuro→claro; sobre un fondo indigo (botones
+// brand-500) hay que invertir el planteamiento y tirar a blanco, o el orbe se
+// perdería contra el fondo.
+const EXTREMOS = {
+  'sobre-claro': [
+    [0x31, 0x2e, 0x81], // #312e81 brand-900
+    [0xe0, 0xe7, 0xff] // #e0e7ff brand-100
+  ],
+  'sobre-indigo': [
+    [0xff, 0xff, 0xff], // blanco
+    [0xa5, 0xb4, 0xfc] // #a5b4fc brand-300
+  ]
+} as const;
 
-// Tabla de 256 colores calculada una sola vez: evita interpolar por píxel en
+export type TonoOrbe = keyof typeof EXTREMOS;
+
+// Tablas de 256 colores calculadas una sola vez: evitan interpolar por píxel en
 // cada fotograma.
-const RAMPA = (() => {
-  const tabla = new Uint8ClampedArray(256 * 3);
-  for (let i = 0; i < 256; i++) {
-    const t = i / 255;
-    tabla[i * 3] = CERCA[0] + (LEJOS[0] - CERCA[0]) * t;
-    tabla[i * 3 + 1] = CERCA[1] + (LEJOS[1] - CERCA[1]) * t;
-    tabla[i * 3 + 2] = CERCA[2] + (LEJOS[2] - CERCA[2]) * t;
+const RAMPAS = (() => {
+  const mapa = {} as Record<TonoOrbe, Uint8ClampedArray>;
+  for (const tono of Object.keys(EXTREMOS) as TonoOrbe[]) {
+    const [cerca, lejos] = EXTREMOS[tono];
+    const tabla = new Uint8ClampedArray(256 * 3);
+    for (let i = 0; i < 256; i++) {
+      const t = i / 255;
+      tabla[i * 3] = cerca[0] + (lejos[0] - cerca[0]) * t;
+      tabla[i * 3 + 1] = cerca[1] + (lejos[1] - cerca[1]) * t;
+      tabla[i * 3 + 2] = cerca[2] + (lejos[2] - cerca[2]) * t;
+    }
+    mapa[tono] = tabla;
   }
-  return tabla;
+  return mapa;
 })();
 
-/** Sustituye el gris de cada píxel visible por su equivalente indigo. */
-function tenirIndigo(datos: ImageData) {
+/** Sustituye el gris de cada píxel visible por su equivalente en la rampa. */
+function tenir(datos: ImageData, rampa: Uint8ClampedArray) {
   const px = datos.data;
   for (let i = 0; i < px.length; i += 4) {
     if (px[i + 3] === 0) continue; // píxel transparente: nada que teñir
     const j = px[i] * 3; // los puntos son grises, basta con el canal rojo
-    px[i] = RAMPA[j];
-    px[i + 1] = RAMPA[j + 1];
-    px[i + 2] = RAMPA[j + 2];
+    px[i] = rampa[j];
+    px[i + 1] = rampa[j + 1];
+    px[i + 2] = rampa[j + 2];
   }
 }
 
@@ -42,6 +60,8 @@ interface OrbePensanteProps {
   state?: OrbState;
   /** Solo 20 o 64: son dos diseños distintos, no el mismo escalado. */
   size?: 20 | 64;
+  /** Paleta según el fondo donde se monta el orbe. */
+  tono?: TonoOrbe;
   label: string;
 }
 
@@ -50,7 +70,12 @@ interface OrbePensanteProps {
  * Se detiene solo cuando la pestaña está oculta y respeta la preferencia del
  * sistema de "reducir movimiento" (en ese caso pinta un fotograma fijo).
  */
-export function OrbePensante({ state = 'composing', size = 64, label }: OrbePensanteProps) {
+export function OrbePensante({
+  state = 'composing',
+  size = 64,
+  tono = 'sobre-claro',
+  label
+}: OrbePensanteProps) {
   const ref = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -67,6 +92,7 @@ export function OrbePensante({ state = 'composing', size = 64, label }: OrbePens
 
     const { mode, speed, opts } = resolvePreset(state, size);
     const dibujar = MODE_DRAWS[mode];
+    const rampa = RAMPAS[tono];
 
     const fotograma = (segundos: number) => {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -74,7 +100,7 @@ export function OrbePensante({ state = 'composing', size = 64, label }: OrbePens
       dibujar(ctx, size, segundos, false, opts); // false = tinta oscura sobre fondo claro
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       const datos = ctx.getImageData(0, 0, ancho, ancho);
-      tenirIndigo(datos);
+      tenir(datos, rampa);
       ctx.putImageData(datos, 0, 0);
     };
 
@@ -112,7 +138,7 @@ export function OrbePensante({ state = 'composing', size = 64, label }: OrbePens
       detener();
       document.removeEventListener('visibilitychange', alCambiarVisibilidad);
     };
-  }, [state, size]);
+  }, [state, size, tono]);
 
   return (
     <canvas

@@ -9,7 +9,7 @@ import { useToast } from '../../hooks/useToast';
 import { TabsCanciones } from '../canciones/TabsCanciones';
 import { SesionCard } from './SesionCard';
 import { SesionFormSheet } from './SesionFormSheet';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import { EmptyState } from '../ui/EmptyState';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import type { Sesion } from '../../domain';
@@ -68,7 +68,7 @@ export function SesionList() {
 
       <main className="px-4 pb-safe-nav pt-1 max-w-2xl mx-auto">
         {loading && !sesiones.length ? (
-          <DotLoader text="Cargando sesiones..." />
+          <OrbeLoader text="Cargando sesiones..." />
         ) : sesiones.length === 0 ? (
           <EmptyState
             title="No hay sesiones aún"
