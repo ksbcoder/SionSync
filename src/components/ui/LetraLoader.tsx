@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react';
+import { OrbePensante } from './OrbePensante';
 
 // Una barra "esqueleto" con barrido de luz (shimmer), simula contenido cargando.
 function Shimmer({ className = '' }: { className?: string }) {
@@ -20,16 +20,14 @@ const BLOQUES = [
 /**
  * Loader bonito para la generación de letra con IA. A diferencia de DotLoader,
  * se queda dentro de la hoja (no tapa toda la pantalla) y muestra el resultado
- * "formándose": una chispa que late y un esqueleto de secciones con shimmer.
+ * "formándose": un orbe de puntos que "piensa" y un esqueleto de secciones con
+ * shimmer.
  */
 export function LetraLoader({ text = 'La IA está buscando la letra...' }: { text?: string }) {
   return (
     <div className="flex flex-col gap-4 py-2">
-      <div className="flex items-center gap-2.5 text-brand-700">
-        <span className="relative flex h-6 w-6 items-center justify-center">
-          <span className="absolute inset-0 rounded-full bg-brand-300/50 animate-ping" />
-          <Sparkles className="w-5 h-5 relative animate-pulse-glow" />
-        </span>
+      <div className="flex items-center gap-3.5 text-brand-700">
+        <OrbePensante state="composing" size={64} label={text} />
         <span className="text-sm font-medium">{text}</span>
       </div>
 
