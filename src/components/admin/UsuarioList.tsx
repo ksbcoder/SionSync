@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { BottomSheet } from '../layout/BottomSheet';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import { ROLES_INFO } from '../../domain';
 import type { UsuarioConRol, RoleName } from '../../domain';
 
@@ -93,7 +93,7 @@ export function UsuarioList() {
 
       <main className="px-4 py-4 max-w-2xl mx-auto">
         {loading ? (
-          <DotLoader text="Cargando usuarios..." />
+          <OrbeLoader text="Cargando usuarios..." />
         ) : (
           <div className="flex flex-col gap-3">
             {usuarios.map(usuario => {

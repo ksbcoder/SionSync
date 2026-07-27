@@ -8,7 +8,7 @@ import { useRoles } from '../../hooks/useRoles';
 import { useToast } from '../../hooks/useToast';
 import { CancionCard } from './CancionCard';
 import { TabsCanciones } from './TabsCanciones';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import { EmptyState } from '../ui/EmptyState';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import type { Cancion } from '../../domain';
@@ -94,7 +94,7 @@ export function CancionList() {
 
       <main className="px-4 pb-safe-nav pt-2 max-w-2xl mx-auto">
         {loading && !canciones.length ? (
-          <DotLoader text="Cargando canciones..." />
+          <OrbeLoader text="Cargando canciones..." />
         ) : canciones.length === 0 ? (
           <EmptyState
             title={query ? 'Sin resultados' : 'No hay canciones aún'}

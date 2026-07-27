@@ -11,7 +11,7 @@ import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { SwipeableCard } from '../ui/SwipeableCard';
 import { SeccionForm } from '../secciones/SeccionForm';
 import { SeccionSimultaneaSheet } from '../secciones/SeccionSimultaneaSheet';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import { TIPOS_SECCION } from '../../domain';
 
 export function CancionDetalle() {
@@ -71,7 +71,7 @@ export function CancionDetalle() {
   }, [cancion]);
 
   if (loading) {
-    return <DotLoader text="Cargando canción..." />;
+    return <OrbeLoader text="Cargando canción..." />;
   }
 
   if (!cancion) {
