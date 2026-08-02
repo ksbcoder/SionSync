@@ -5,7 +5,7 @@ import { useSesiones } from '../../hooks/useSesiones';
 import { useCanciones } from '../../hooks/useCanciones';
 import { useAutoScroll } from '../../hooks/useAutoScroll';
 import { CuerpoPresentacion } from '../canciones/CuerpoPresentacion';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import type { Cancion } from '../../domain';
 
 export function SesionPresentacion() {
@@ -38,7 +38,7 @@ export function SesionPresentacion() {
   if (!canciones) {
     return (
       <div className="fixed inset-0 bg-stage-bg flex items-center justify-center">
-        <DotLoader />
+        <OrbeLoader />
       </div>
     );
   }

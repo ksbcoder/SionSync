@@ -18,7 +18,7 @@ const BLOQUES = [
 ];
 
 /**
- * Loader bonito para la generación de letra con IA. A diferencia de DotLoader,
+ * Loader bonito para la generación de letra con IA. A diferencia de OrbeLoader,
  * se queda dentro de la hoja (no tapa toda la pantalla) y muestra el resultado
  * "formándose": un orbe de puntos que "piensa" y un esqueleto de secciones con
  * shimmer.

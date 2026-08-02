@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Presentation, MoreVertical, ChevronUp, ChevronDown, Trash2, Music2 } from 'lucide-react';
+import { ArrowLeft, Plus, Presentation, MoreHorizontal, ChevronUp, ChevronDown, Trash2, Music2 } from 'lucide-react';
 import { useSesionDetalle } from '../../hooks/useSesionDetalle';
 import { useSesiones } from '../../hooks/useSesiones';
 import { useRealtime } from '../../hooks/useRealtime';
@@ -73,7 +73,7 @@ export function SesionDetalle() {
         )}
         {canEdit && (
           <button onClick={() => setMenuOpen(true)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-xl">
-            <MoreVertical className="w-5 h-5" />
+            <MoreHorizontal className="w-5 h-5" />
           </button>
         )}
       </header>

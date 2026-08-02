@@ -21,10 +21,13 @@ interface Props {
 
 export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, onAgregar }: Props) {
   const navigate = useNavigate();
-  const { getCanciones, loading } = useCanciones();
+  const { getCanciones } = useCanciones();
   const { canCreateCanciones } = useRoles();
   const { showToast } = useToast();
   const [catalogo, setCatalogo] = useState<Cancion[]>([]);
+  // Hasta que termine la primera carga mostramos el loader; si no, el mensaje
+  // de "no hay canciones" alcanza a verse al abrir el panel.
+  const [cargado, setCargado] = useState(false);
   const [query, setQuery] = useState('');
   const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set());
   const [guardando, setGuardando] = useState(false);
@@ -33,7 +36,10 @@ export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, 
     if (!isOpen) return;
     setQuery('');
     setSeleccionados(new Set());
-    getCanciones().then(data => setCatalogo(data ?? []));
+    getCanciones().then(data => {
+      setCatalogo(data ?? []);
+      setCargado(true);
+    });
   }, [isOpen, getCanciones]);
 
   // Canciones del catálogo que aún no están en la sesión, filtradas por búsqueda.
@@ -98,7 +104,7 @@ export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, 
           )}
         </div>
 
-        {loading && !catalogo.length ? (
+        {!cargado ? (
           <OrbeLoader text="Cargando catálogo..." />
         ) : disponibles.length === 0 ? (
           <p className="text-sm text-gray-400 py-4 text-center">

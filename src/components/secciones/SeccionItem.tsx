@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MoreVertical, ChevronUp, ChevronDown, Trash2, Pencil, Music, Copy, Users } from 'lucide-react';
+import { MoreHorizontal, ChevronUp, ChevronDown, Trash2, Pencil, Music, Copy, Users } from 'lucide-react';
 import { SeccionBadge } from './SeccionBadge';
 import { NotasDisplay } from '../notas/NotasDisplay';
 import { BottomSheet } from '../layout/BottomSheet';
@@ -89,7 +89,7 @@ export function SeccionItem({
                   onClick={() => setMenuOpen(true)}
                   className="min-h-[44px] min-w-[36px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
                 >
-                  <MoreVertical className="w-[18px] h-[18px]" />
+                  <MoreHorizontal className="w-[18px] h-[18px]" />
                 </button>
               </div>
             )}

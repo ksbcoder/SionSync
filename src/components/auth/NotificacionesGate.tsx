@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Music2, Bell } from 'lucide-react';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 
 /**
  * Tras aceptar el consentimiento, ofrece activar las notificaciones en este
@@ -23,7 +23,7 @@ export function NotificacionesGate({ children }: { children: ReactNode }) {
   if (estado === 'cargando') {
     return (
       <div className="min-h-svh bg-app flex items-center justify-center">
-        <DotLoader />
+        <OrbeLoader />
       </div>
     );
   }

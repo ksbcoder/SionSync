@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Music2, ShieldAlert, ArrowLeft } from 'lucide-react';
 import { useRoles } from '../../hooks/useRoles';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 
 /**
  * Protege una ruta según los permisos del usuario.
@@ -28,7 +28,7 @@ export function RequireRole({
   if (roles.loading) {
     return (
       <div className="min-h-svh bg-app flex items-center justify-center">
-        <DotLoader />
+        <OrbeLoader />
       </div>
     );
   }

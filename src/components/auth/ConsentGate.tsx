@@ -3,7 +3,7 @@ import { Music2 } from 'lucide-react';
 import { useConsent } from '../../hooks/useConsent';
 import { useAuth } from '../../hooks/useAuth';
 import { PoliticaDatos } from './PoliticaDatos';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 import type { ReactNode } from 'react';
 
 export function ConsentGate({ children }: { children: ReactNode }) {
@@ -16,7 +16,7 @@ export function ConsentGate({ children }: { children: ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-svh bg-app flex items-center justify-center">
-        <DotLoader />
+        <OrbeLoader />
       </div>
     );
   }

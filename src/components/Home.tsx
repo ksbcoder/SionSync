@@ -4,7 +4,7 @@ import { Music2, Settings, CalendarDays, LogOut, UserCircle, Clock } from 'lucid
 import { useAuth } from '../hooks/useAuth';
 import { useRoles } from '../hooks/useRoles';
 import { ProfileSheet } from './ProfileSheet';
-import { DotLoader } from './ui/DotLoader';
+import { OrbeLoader } from './ui/OrbeLoader';
 
 export function Home() {
   const navigate = useNavigate();
@@ -69,7 +69,7 @@ export function Home() {
       <main className="flex-1 px-4 flex flex-col gap-3 max-w-lg mx-auto w-full">
         {loadingRoles ? (
           <div className="flex-1 flex items-center justify-center py-12">
-            <DotLoader />
+            <OrbeLoader />
           </div>
         ) : isMiembroNuevo ? (
           <div className="bg-white rounded-2xl border border-amber-200 p-6 flex flex-col items-center text-center gap-3">

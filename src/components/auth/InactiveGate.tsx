@@ -2,7 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { Music2, LogOut } from 'lucide-react';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useAuth } from '../../hooks/useAuth';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 
 export function InactiveGate({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
@@ -25,7 +25,7 @@ export function InactiveGate({ children }: { children: ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-svh bg-app flex items-center justify-center">
-        <DotLoader />
+        <OrbeLoader />
       </div>
     );
   }

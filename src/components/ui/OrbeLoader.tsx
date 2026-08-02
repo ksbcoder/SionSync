@@ -1,12 +1,10 @@
 import { OrbePensante } from './OrbePensante';
 
 /**
- * Loader de pantalla completa para las cargas de datos que sí tardan (listas,
- * detalles y catálogos). Mismo lugar y mismo fondo que DotLoader, pero con el
- * orbe de puntos en índigo.
- *
- * DotLoader se conserva para las cargas instantáneas —las puertas de acceso—,
- * donde un orbe solo alcanzaría a dar un destello.
+ * Único loader de pantalla completa de la app: arranque (sesión, rol,
+ * consentimiento), listas, detalles y catálogos. Antes convivía con un
+ * DotLoader de tres puntos para las "puertas de acceso"; se unificó todo en el
+ * orbe índigo para que la espera se vea igual en toda la app.
  */
 export function OrbeLoader({ text }: { text?: string }) {
   return (

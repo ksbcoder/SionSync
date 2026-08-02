@@ -1,4 +1,4 @@
-import { Trash2, Bell, BellOff, MoreVertical } from 'lucide-react';
+import { Trash2, Bell, BellOff, MoreHorizontal } from 'lucide-react';
 import { SwipeableCard } from '../ui/SwipeableCard';
 import type { Programacion, ResponsableProgramacion } from '../../domain';
 
@@ -52,7 +52,7 @@ export function TarjetaProgramacion({
             className="min-h-[36px] min-w-[36px] flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Opciones de la programación"
           >
-            <MoreVertical className="w-5 h-5" />
+            <MoreHorizontal className="w-5 h-5" />
           </button>
         </div>
 
