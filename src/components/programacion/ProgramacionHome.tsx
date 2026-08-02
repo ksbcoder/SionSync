@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, UserPlus, Power, Info, Copy } from 'lucide-react';
 import { useRoles } from '../../hooks/useRoles';
-import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { useProgramaciones, useResponsables } from '../../hooks/useProgramaciones';
 import { useProgramacionSemana } from '../../hooks/useProgramacionSemana';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
+import { programacionRepository } from '../../infrastructure/programacion.repository';
 import { EmptyState } from '../ui/EmptyState';
 import { ConfirmSheet } from '../ui/ConfirmSheet';
 import { BottomSheet } from '../layout/BottomSheet';
@@ -20,9 +20,8 @@ import type { Programacion, ResponsableProgramacion } from '../../domain';
 
 export function ProgramacionHome() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { showToast } = useToast();
-  const { isAdmin, canGestionarProgramacion, canGestionarNotificaciones } = useRoles();
+  const { canGestionarProgramacion, canGestionarNotificaciones } = useRoles();
   const { deleteProgramacion, toggleActivo } = useProgramaciones();
   const { eliminarResponsable, toggleNotificado, contarPorProgramacion } = useResponsables();
 
@@ -65,7 +64,9 @@ export function ProgramacionHome() {
   const [confirmNotificado, setConfirmNotificado] = useState<ResponsableProgramacion | null>(null);
 
   const responsables = responsablesSemana.filter(r => r.fecha === fecha);
-  const puedeEditarProg = (prog: Programacion) => isAdmin || (canGestionarProgramacion && prog.user_id === user?.id);
+  // Gestores y administradores editan cualquier programación, sin importar
+  // quién la creó. Los detalles dejan registro de quién hizo el último cambio.
+  const puedeEditar = canGestionarProgramacion;
 
   const mostrandoInactivas = canGestionarProgramacion && verInactivas;
   const filtradas = todasProgramaciones
@@ -152,11 +153,17 @@ export function ProgramacionHome() {
     setModificadorNombre(null);
 
     try {
-      const ids = [...new Set([prog.user_id, prog.updated_by])];
+      // Relee la programación: asignar o quitar responsables también mueve la
+      // auditoría en la base, y la copia en pantalla puede estar desfasada.
+      const actual = await programacionRepository.getById(prog.id);
+      setDetallesProg({ ...actual, tipos_programacion: actual.tipos_programacion ?? prog.tipos_programacion });
+      setTodasProgramaciones(prev => prev.map(p => (p.id === actual.id ? { ...p, ...actual } : p)));
+
+      const ids = [...new Set([actual.user_id, actual.updated_by])];
       const perfiles = await usuarioRepository.getProfilesByIds(ids);
       const porId = new Map(perfiles.map(p => [p.id, p.display_name]));
-      setCreadorNombre(porId.get(prog.user_id) ?? 'No disponible');
-      setModificadorNombre(porId.get(prog.updated_by) ?? 'No disponible');
+      setCreadorNombre(porId.get(actual.user_id) ?? 'No disponible');
+      setModificadorNombre(porId.get(actual.updated_by) ?? 'No disponible');
     } catch {
       setCreadorNombre('No disponible');
       setModificadorNombre('No disponible');
@@ -243,7 +250,7 @@ export function ProgramacionHome() {
               key={prog.id}
               prog={prog}
               responsables={responsablesPorProg(prog.id)}
-              puedeEditar={puedeEditarProg(prog)}
+              puedeEditar={puedeEditar}
               canGestionarNotificaciones={canGestionarNotificaciones}
               onAbrirMenu={setMenuProg}
               onEliminarProg={solicitarEliminarProg}
@@ -272,7 +279,7 @@ export function ProgramacionHome() {
         title={menuProg?.tipos_programacion?.nombre ?? 'Programación'}
       >
         <div className="flex flex-col gap-2">
-          {menuProg?.activo && (
+          {puedeEditar && menuProg?.activo && (
             <button
               onClick={() => { setAsignarPara(menuProg); setMenuProg(null); }}
               className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
@@ -284,20 +291,22 @@ export function ProgramacionHome() {
               </div>
             </button>
           )}
-          <button
-            onClick={() => { if (menuProg) handleToggleActivo(menuProg); }}
-            className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
-          >
-            <Power className={`w-5 h-5 ${menuProg?.activo ? 'text-warning' : 'text-success'}`} />
-            <div>
-              <p className="font-medium text-gray-800">
-                {menuProg?.activo ? 'Desactivar programación' : 'Reactivar programación'}
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {menuProg?.activo ? 'No se mostrará en la vista principal' : 'Volverá a aparecer en la vista de activas'}
-              </p>
-            </div>
-          </button>
+          {puedeEditar && (
+            <button
+              onClick={() => { if (menuProg) handleToggleActivo(menuProg); }}
+              className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
+            >
+              <Power className={`w-5 h-5 ${menuProg?.activo ? 'text-warning' : 'text-success'}`} />
+              <div>
+                <p className="font-medium text-gray-800">
+                  {menuProg?.activo ? 'Desactivar programación' : 'Reactivar programación'}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {menuProg?.activo ? 'No se mostrará en la vista principal' : 'Volverá a aparecer en la vista de activas'}
+                </p>
+              </div>
+            </button>
+          )}
           <button
             onClick={() => { if (menuProg) abrirDetalles(menuProg); }}
             className="w-full text-left p-4 rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors flex items-center gap-3"
@@ -308,16 +317,18 @@ export function ProgramacionHome() {
               <p className="text-xs text-gray-400 mt-0.5">Ver quién creó y modificó</p>
             </div>
           </button>
-          <button
-            onClick={() => { if (menuProg) solicitarEliminarProg(menuProg); }}
-            className="w-full text-left p-4 rounded-xl hover:bg-red-50 border border-red-100 transition-colors flex items-center gap-3"
-          >
-            <Trash2 className="w-5 h-5 text-danger" />
-            <div>
-              <p className="font-medium text-danger">Eliminar programación</p>
-              <p className="text-xs text-gray-400 mt-0.5">Solo si no tiene responsables asignados</p>
-            </div>
-          </button>
+          {puedeEditar && (
+            <button
+              onClick={() => { if (menuProg) solicitarEliminarProg(menuProg); }}
+              className="w-full text-left p-4 rounded-xl hover:bg-red-50 border border-red-100 transition-colors flex items-center gap-3"
+            >
+              <Trash2 className="w-5 h-5 text-danger" />
+              <div>
+                <p className="font-medium text-danger">Eliminar programación</p>
+                <p className="text-xs text-gray-400 mt-0.5">Solo si no tiene responsables asignados</p>
+              </div>
+            </button>
+          )}
         </div>
       </BottomSheet>
 

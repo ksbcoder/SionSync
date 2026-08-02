@@ -4,8 +4,9 @@ import type { Programacion, ResponsableProgramacion } from '../../domain';
 
 /**
  * Tarjeta de una programación con la lista de sus responsables para la fecha
- * seleccionada. Quien puede editar ve el menú (⋮), el botón de quitar y el
- * swipe para eliminar; el estado "notificado" es accionable solo para quien
+ * seleccionada. El menú (⋮) lo ven todos —al menos para consultar los
+ * detalles—, mientras que el botón de quitar y el swipe para eliminar son solo
+ * para quien puede editar; el estado "notificado" es accionable solo para quien
  * gestiona notificaciones, y de lectura para el resto.
  */
 export function TarjetaProgramacion({
@@ -46,14 +47,13 @@ export function TarjetaProgramacion({
               {prog.tipos_programacion?.nombre ?? 'Programación'}
             </h2>
           </div>
-          {puedeEditar && (
-            <button
-              onClick={() => onAbrirMenu(prog)}
-              className="min-h-[36px] min-w-[36px] flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <MoreVertical className="w-5 h-5" />
-            </button>
-          )}
+          <button
+            onClick={() => onAbrirMenu(prog)}
+            className="min-h-[36px] min-w-[36px] flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Opciones de la programación"
+          >
+            <MoreVertical className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="px-4 py-3">

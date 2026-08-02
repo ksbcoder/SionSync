@@ -69,6 +69,19 @@ export const programacionRepository = {
     return data ?? [];
   },
 
+  // Relee una programación desde la base. Se usa para los detalles de
+  // auditoría: la copia en pantalla puede estar desfasada porque los cambios
+  // en sus responsables también actualizan "quién modificó y cuándo".
+  async getById(id: string): Promise<Programacion> {
+    const { data, error } = await supabase
+      .from('programaciones')
+      .select('*, tipos_programacion(*)')
+      .eq('id', id)
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
   async create(data: ProgramacionInsert): Promise<Programacion> {
     const user_id = await getUserId();
     const { data: created, error } = await supabase
