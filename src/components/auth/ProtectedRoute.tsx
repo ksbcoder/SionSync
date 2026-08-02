@@ -5,7 +5,7 @@ import { ConsentGate } from './ConsentGate';
 import { InactiveGate } from './InactiveGate';
 import { MiembroNuevoGate } from './MiembroNuevoGate';
 import { NotificacionesGate } from './NotificacionesGate';
-import { DotLoader } from '../ui/DotLoader';
+import { OrbeLoader } from '../ui/OrbeLoader';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -13,7 +13,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-svh bg-app flex items-center justify-center">
-        <DotLoader />
+        <OrbeLoader />
       </div>
     );
   }

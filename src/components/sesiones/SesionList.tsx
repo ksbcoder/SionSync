@@ -16,10 +16,13 @@ import type { Sesion } from '../../domain';
 
 export function SesionList() {
   const navigate = useNavigate();
-  const { getSesiones, deleteSesion, loading } = useSesiones();
+  const { getSesiones, deleteSesion } = useSesiones();
   const { canCreateCanciones } = useRoles();
   const { showToast } = useToast();
   const [sesiones, setSesiones] = useState<Sesion[]>([]);
+  // Hasta que termine la primera carga mostramos el loader; si no, el estado
+  // vacío alcanza a verse en el primer render.
+  const [cargado, setCargado] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editando, setEditando] = useState<Sesion | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -29,6 +32,7 @@ export function SesionList() {
   const cargar = useCallback(async () => {
     const data = await getSesiones();
     setSesiones(data ?? []);
+    setCargado(true);
   }, [getSesiones]);
 
   useEffect(() => { cargar(); }, [cargar]);
@@ -67,7 +71,7 @@ export function SesionList() {
       </div>
 
       <main className="px-4 pb-safe-nav pt-1 max-w-2xl mx-auto">
-        {loading && !sesiones.length ? (
+        {!cargado ? (
           <OrbeLoader text="Cargando sesiones..." />
         ) : sesiones.length === 0 ? (
           <EmptyState

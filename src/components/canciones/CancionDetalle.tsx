@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { ArrowLeft, MoreVertical, Plus, Presentation, Trash2, Pencil, Info } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal, Plus, Presentation, Trash2, Pencil, Info } from 'lucide-react';
 import { usuarioRepository } from '../../infrastructure/usuario.repository';
 import { useCancionDetalle } from '../../hooks/useCancionDetalle';
 import { useCanEdit } from '../../hooks/useRoles';
@@ -99,7 +99,7 @@ export function CancionDetalle() {
           <Presentation className="w-5 h-5" />
         </button>
         <button onClick={() => setMenuOpen(true)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-xl">
-          <MoreVertical className="w-5 h-5" />
+          <MoreHorizontal className="w-5 h-5" />
         </button>
       </header>
 

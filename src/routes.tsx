@@ -2,7 +2,7 @@ import { lazy, Suspense, useState, useEffect } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { RequireRole } from './components/auth/RequireRole';
-import { DotLoader } from './components/ui/DotLoader';
+import { OrbeLoader } from './components/ui/OrbeLoader';
 import { useCanciones } from './hooks/useCanciones';
 import type { Cancion } from './domain';
 
@@ -22,7 +22,7 @@ const ProgramacionHome = lazy(() => import('./components/programacion/Programaci
 function LazyFallback() {
   return (
     <div className="min-h-svh bg-app flex items-center justify-center">
-      <DotLoader />
+      <OrbeLoader />
     </div>
   );
 }

@@ -15,10 +15,13 @@ import type { Cancion } from '../../domain';
 
 export function CancionList() {
   const navigate = useNavigate();
-  const { getCanciones, deleteCancion, loading } = useCanciones();
+  const { getCanciones, deleteCancion } = useCanciones();
   const { canCreateCanciones } = useRoles();
   const { showToast } = useToast();
   const [todasCanciones, setTodasCanciones] = useState<Cancion[]>([]);
+  // Hasta que termine la primera carga mostramos el loader; si no, el estado
+  // vacío alcanza a verse en el primer render.
+  const [cargado, setCargado] = useState(false);
   const [query, setQuery] = useState('');
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
@@ -29,6 +32,7 @@ export function CancionList() {
   const cargar = useCallback(async () => {
     const data = await getCanciones();
     setTodasCanciones(data ?? []);
+    setCargado(true);
   }, [getCanciones]);
 
   useEffect(() => { cargar(); }, [cargar]);
@@ -93,7 +97,7 @@ export function CancionList() {
       </div>
 
       <main className="px-4 pb-safe-nav pt-2 max-w-2xl mx-auto">
-        {loading && !canciones.length ? (
+        {!cargado ? (
           <OrbeLoader text="Cargando canciones..." />
         ) : canciones.length === 0 ? (
           <EmptyState
