@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Plus, Check, X, RotateCcw } from 'lucide-react';
 import { TouchButton } from '../ui/TouchButton';
 import { LetraConAcordes } from './LetraConAcordes';
@@ -26,10 +26,15 @@ export function SeccionForm({ seccion, onGuardar, onCancelar }: SeccionFormProps
   const [descripcion, setDescripcion] = useState(seccion?.descripcion ?? '');
   const [saving, setSaving] = useState(false);
 
-  // Modo "insertar acorde": recordamos dónde estaba el cursor en la letra para
+  // Modo "insertar acorde": recordamos dónde está el cursor en la letra para
   // meter el acorde justo ahí (puede caer a mitad de una palabra).
+  //
+  // Usamos el evento 'selectionchange' del documento en vez de onSelect/onClick
+  // del textarea: en iOS el evento 'select' NO se dispara al mover solo el
+  // cursor (sin seleccionar texto), así que la posición quedaba vieja y el
+  // acorde caía al final de la palabra. 'selectionchange' sí sigue el cursor.
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [cursorPos, setCursorPos] = useState(0);
+  const cursorPosRef = useRef(0);
   const [insertando, setInsertando] = useState(false);
   const [acordeNuevo, setAcordeNuevo] = useState('');
 
@@ -37,22 +42,30 @@ export function SeccionForm({ seccion, onGuardar, onCancelar }: SeccionFormProps
   const acordesActuales = extraerAcordes(letra);
   const [secuencia, setSecuencia] = useState(() => extraerAcordes(seccion?.letra ?? '').join(' '));
 
-  const recordarCursor = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
-    setCursorPos(e.currentTarget.selectionStart ?? 0);
-  };
+  useEffect(() => {
+    const actualizar = () => {
+      const ta = textareaRef.current;
+      if (ta && document.activeElement === ta) {
+        cursorPosRef.current = ta.selectionStart ?? 0;
+      }
+    };
+    document.addEventListener('selectionchange', actualizar);
+    return () => document.removeEventListener('selectionchange', actualizar);
+  }, []);
 
   const confirmarInsertar = () => {
     const simbolo = capitalizarAcorde(acordeNuevo.trim());
     if (!simbolo) { setInsertando(false); return; }
-    const pos = Math.min(cursorPos, letra.length);
+    const pos = Math.min(cursorPosRef.current, letra.length);
     const nueva = letra.slice(0, pos) + `[${simbolo}]` + letra.slice(pos);
     setLetra(nueva);
     setInsertando(false);
     setAcordeNuevo('');
     const nuevoCursor = pos + simbolo.length + 2; // detrás del acorde recién puesto
+    cursorPosRef.current = nuevoCursor;
     requestAnimationFrame(() => {
       const ta = textareaRef.current;
-      if (ta) { ta.focus(); ta.setSelectionRange(nuevoCursor, nuevoCursor); setCursorPos(nuevoCursor); }
+      if (ta) { ta.focus(); ta.setSelectionRange(nuevoCursor, nuevoCursor); }
     });
   };
 
@@ -94,9 +107,6 @@ export function SeccionForm({ seccion, onGuardar, onCancelar }: SeccionFormProps
           placeholder="Escribe la letra aquí..."
           value={letra}
           onChange={e => setLetra(e.target.value)}
-          onSelect={recordarCursor}
-          onClick={recordarCursor}
-          onKeyUp={recordarCursor}
           style={{ minHeight: '150px' }}
         />
 
