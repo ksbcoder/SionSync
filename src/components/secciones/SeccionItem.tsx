@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { MoreHorizontal, ChevronUp, ChevronDown, Trash2, Pencil, Music, Copy, Users } from 'lucide-react';
+import { MoreHorizontal, ChevronUp, ChevronDown, Trash2, Pencil, Copy, Users } from 'lucide-react';
 import { SeccionBadge } from './SeccionBadge';
-import { NotasDisplay } from '../notas/NotasDisplay';
+import { LetraConAcordes } from './LetraConAcordes';
 import { BottomSheet } from '../layout/BottomSheet';
 import { SeccionForm } from './SeccionForm';
-import { NotasForm } from '../notas/NotasForm';
 import { Tooltip } from '../ui/Tooltip';
-import type { Seccion, TipoSeccion, Nota } from '../../domain';
+import type { Seccion, TipoSeccion } from '../../domain';
 
 interface SeccionItemProps {
   seccion: Seccion;
@@ -18,9 +17,6 @@ interface SeccionItemProps {
   onDelete: () => void;
   onDuplicate: () => Promise<void>;
   onUpdate: (data: { tipo: TipoSeccion; letra: string; descripcion: string | null }) => Promise<void>;
-  onAddNota: (contenido: string) => Promise<void>;
-  onUpdateNota: (id: string, contenido: string) => Promise<void>;
-  onDeleteNota: (id: string) => Promise<void>;
   /** Abre el selector de secciones simultáneas. */
   onSimultanea: () => void;
   /** Etiquetas de las otras secciones que se cantan a la vez que esta. */
@@ -32,13 +28,10 @@ const menuItemBase = 'w-full min-h-[48px] flex items-center gap-3 px-4 rounded-x
 export function SeccionItem({
   seccion, canEdit, canMoveUp, canMoveDown,
   onMoveUp, onMoveDown, onDelete, onDuplicate, onUpdate,
-  onAddNota, onUpdateNota, onDeleteNota,
   onSimultanea, companeras,
 }: SeccionItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [notasOpen, setNotasOpen] = useState(false);
-  const notas: Nota[] = seccion.notas ?? [];
 
   const closeAndRun = (fn: () => void) => {
     setMenuOpen(false);
@@ -94,12 +87,7 @@ export function SeccionItem({
               </div>
             )}
           </div>
-          {notas.length > 0 && (
-            <div className="mb-3">
-              <NotasDisplay notas={notas} />
-            </div>
-          )}
-          <p className="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap">{seccion.letra}</p>
+          <LetraConAcordes letra={seccion.letra} />
           {seccion.descripcion && (
             <p className="mt-3 text-sm text-gray-500 italic whitespace-pre-wrap">{seccion.descripcion}</p>
           )}
@@ -111,10 +99,6 @@ export function SeccionItem({
           <button onClick={() => closeAndRun(() => setEditOpen(true))} className={`${menuItemBase} text-gray-700 hover:bg-gray-50`}>
             <Pencil className="w-5 h-5 text-brand-500" />
             Editar sección
-          </button>
-          <button onClick={() => closeAndRun(() => setNotasOpen(true))} className={`${menuItemBase} text-gray-700 hover:bg-gray-50`}>
-            <Music className="w-5 h-5 text-chord-dark" />
-            Acordes / Notas
           </button>
           <button onClick={() => closeAndRun(onSimultanea)} className={`${menuItemBase} text-gray-700 hover:bg-gray-50`}>
             <Users className="w-5 h-5 text-violet-500" />
@@ -132,16 +116,6 @@ export function SeccionItem({
           seccion={seccion}
           onGuardar={async (data) => { await onUpdate(data); setEditOpen(false); }}
           onCancelar={() => setEditOpen(false)}
-        />
-      </BottomSheet>
-
-      <BottomSheet isOpen={notasOpen} onClose={() => setNotasOpen(false)} title="Acordes / Notas">
-        <NotasForm
-          notas={notas}
-          canEdit={canEdit}
-          onAdd={onAddNota}
-          onUpdate={onUpdateNota}
-          onDelete={onDeleteNota}
         />
       </BottomSheet>
     </>

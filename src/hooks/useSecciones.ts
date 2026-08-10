@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useAsync } from './useAsync';
 import { seccionRepository } from '../infrastructure/seccion.repository';
-import { notaRepository } from '../infrastructure/nota.repository';
 import type { Seccion, SeccionInsert } from '../domain';
 
 export function useSecciones() {
@@ -35,28 +34,15 @@ export function useSecciones() {
   );
 
   const duplicarSeccion = useCallback(
+    // La letra ya lleva los acordes incrustados, así que copiar la sección basta.
     (seccion: Seccion, ordenSiguiente: number): Promise<Seccion | null> =>
-      run(async () => {
-        const nueva = await seccionRepository.create({
-          cancion_id: seccion.cancion_id,
-          tipo: seccion.tipo,
-          letra: seccion.letra,
-          descripcion: seccion.descripcion,
-          orden: ordenSiguiente,
-        });
-
-        if (seccion.notas?.length) {
-          await notaRepository.createMany(
-            seccion.notas.map(n => ({
-              seccion_id: nueva.id,
-              orden: n.orden,
-              contenido: n.contenido,
-            }))
-          );
-        }
-
-        return nueva;
-      }),
+      run(() => seccionRepository.create({
+        cancion_id: seccion.cancion_id,
+        tipo: seccion.tipo,
+        letra: seccion.letra,
+        descripcion: seccion.descripcion,
+        orden: ordenSiguiente,
+      })),
     [run]
   );
 

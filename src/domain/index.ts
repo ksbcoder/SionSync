@@ -4,7 +4,8 @@ export { TONALIDADES } from './cancion';
 export type { Seccion, SeccionInsert, SeccionGenerada, TipoSeccion } from './seccion';
 export { TIPOS_SECCION, calcularSiguienteOrden } from './seccion';
 
-export type { Nota, NotaInsert } from './nota';
+export type { SegmentoAcorde } from './chordpro';
+export { parseLinea, parseLetra, tieneAcordes, extraerAcordes, reemplazarAcordes } from './chordpro';
 
 export { toISODate, hoy, sumarDias, inicioSemana, formatFecha } from './fecha';
 
