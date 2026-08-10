@@ -14,10 +14,9 @@ export const cancionRepository = {
   async getById(id: string): Promise<Cancion> {
     const { data, error } = await supabase
       .from('canciones')
-      .select(`*, secciones(*, notas(*))`)
+      .select(`*, secciones(*)`)
       .eq('id', id)
       .order('orden', { referencedTable: 'secciones', ascending: true })
-      .order('orden', { referencedTable: 'secciones.notas', ascending: true })
       .single();
     if (error) throw new Error(error.message);
     return data;

@@ -1,5 +1,3 @@
-import type { Nota } from './nota';
-
 export type TipoSeccion = 'verso' | 'coro' | 'pre-coro' | 'puente' | 'intro' | 'outro' | 'final' | 'otro';
 
 export interface Seccion {
@@ -7,12 +5,12 @@ export interface Seccion {
   cancion_id: string;
   tipo: TipoSeccion;
   orden: number;
+  /** Letra en formato ChordPro: los acordes van incrustados entre corchetes. */
   letra: string;
   descripcion: string | null;
   /** Secciones con el mismo valor se cantan al mismo tiempo. NULL = no simultánea. */
   grupo_simultaneo: string | null;
   created_at: string;
-  notas?: Nota[];
 }
 
 export interface SeccionInsert {

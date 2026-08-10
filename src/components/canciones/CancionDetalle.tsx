@@ -27,7 +27,6 @@ export function CancionDetalle() {
     cancion, loading, secciones,
     eliminarCancion, agregarSeccion, editarSeccion,
     eliminarSeccion, moverSeccion, duplicar,
-    agregarNota, editarNota, eliminarNota,
     vincularSimultaneas,
   } = useCancionDetalle(id);
   const { showToast } = useToast();
@@ -145,9 +144,6 @@ export function CancionDetalle() {
               onDelete={() => setConfirmSeccionId(seccion.id)}
               onDuplicate={() => duplicar(seccion.id)}
               onUpdate={(data) => editarSeccion(seccion.id, data)}
-              onAddNota={(contenido) => agregarNota(seccion.id, contenido)}
-              onUpdateNota={editarNota}
-              onDeleteNota={eliminarNota}
               onSimultanea={() => setSimultaneaSeccionId(seccion.id)}
               companeras={companeras}
             />

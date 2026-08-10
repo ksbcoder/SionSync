@@ -1,7 +1,7 @@
 import { Users } from 'lucide-react';
 import { SeccionBadge } from '../secciones/SeccionBadge';
 import { Tooltip } from '../ui/Tooltip';
-import { NotasDisplay } from '../notas/NotasDisplay';
+import { LetraConAcordes } from '../secciones/LetraConAcordes';
 import type { Cancion, Seccion } from '../../domain';
 
 /**
@@ -18,10 +18,7 @@ function SeccionContenido({ seccion }: { seccion: Seccion }) {
       <div className="mb-3">
         <SeccionBadge tipo={seccion.tipo} />
       </div>
-      {seccion.notas && seccion.notas.length > 0 && (
-        <NotasDisplay notas={seccion.notas} presentacion />
-      )}
-      <p className="text-xl leading-loose text-stage-text whitespace-pre-wrap">{seccion.letra}</p>
+      <LetraConAcordes letra={seccion.letra} presentacion />
       {seccion.descripcion && (
         <p className="mt-3 text-base text-stage-muted italic whitespace-pre-wrap">{seccion.descripcion}</p>
       )}
