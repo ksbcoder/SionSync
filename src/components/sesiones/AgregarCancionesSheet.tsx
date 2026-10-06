@@ -153,7 +153,7 @@ export function AgregarCancionesSheet({ isOpen, onClose, sesionId, idsEnSesion, 
           className="w-full min-h-[44px] rounded-lg bg-brand-500 text-white font-medium text-sm hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {guardando && (
-            <OrbePensante state="working" size={20} tono="sobre-indigo" label="Agregando..." />
+            <OrbePensante state="solving" size={20} tono="sobre-indigo" label="Agregando..." />
           )}
           {guardando
             ? 'Agregando...'

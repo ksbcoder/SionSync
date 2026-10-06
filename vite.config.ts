@@ -5,6 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
+    // Al compilar se quitan los avisos de copyright de las librerías, pero sus
+    // licencias (MIT y similares) piden conservarlos. Vite los reúne en este
+    // archivo, que se publica junto a la app en /licencias-terceros.md.
+    license: { fileName: 'licencias-terceros.md' },
     rollupOptions: {
       output: {
         // Separamos las librerías grandes y estables (React, Supabase) en su

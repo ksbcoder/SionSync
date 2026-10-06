@@ -14,19 +14,20 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
+    "border-beam": "1.4.1",
+    "bot-avatars": "0.2.2",
     "lucide-react": "^1.16.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.15.1",
     "sonner": "^2.0.7",
-    "thinking-orbs": "0.1.1"
+    "thinking-orbs": "0.3.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@types/sharp": "^0.32.0",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.8",
     "autoprefixer": "^10.5.0",
@@ -35,7 +36,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "postcss": "^8.5.14",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "tailwindcss": "^3.4.19",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",

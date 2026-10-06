@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Check, X } from 'lucide-react';
+import { ArrowLeft, Check, X } from 'lucide-react';
+import type { BotAvatarState } from 'bot-avatars';
 import { useCanciones } from '../../hooks/useCanciones';
 import { useSesiones } from '../../hooks/useSesiones';
 import { useSecciones } from '../../hooks/useSecciones';
 import { useToast } from '../../hooks/useToast';
 import { TouchButton } from '../ui/TouchButton';
+import { BotAsistente } from '../ui/BotAsistente';
 import { GenerarLetraSheet } from './GenerarLetraSheet';
 import { TONALIDADES, calcularSiguienteOrden } from '../../domain';
 import type { Cancion, SeccionGenerada } from '../../domain';
@@ -45,6 +47,9 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
   // Secciones propuestas por la IA, listas para guardarse al crear la canción.
   const [iaOpen, setIaOpen] = useState(false);
   const [seccionesIA, setSeccionesIA] = useState<SeccionGenerada[] | null>(null);
+  // El bot del botón espera tranquilo, trabaja mientras la IA busca la letra y
+  // se duerme cuando termina.
+  const [estadoBot, setEstadoBot] = useState<BotAvatarState>('default');
 
   const handleSubmit = async () => {
     if (!titulo.trim()) return;
@@ -188,9 +193,9 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
               type="button"
               onClick={() => { if (titulo.trim()) setIaOpen(true); }}
               disabled={!titulo.trim()}
-              className="flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-brand-50 text-brand-800 font-medium text-sm hover:bg-brand-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2.5 min-h-[44px] py-2 rounded-xl bg-brand-50 text-brand-800 font-medium text-sm hover:bg-brand-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <Sparkles className="w-4 h-4" />
+              <BotAsistente state={estadoBot} size={40} />
               Generar letra con IA
             </button>
           )
@@ -215,6 +220,7 @@ export function CancionForm({ cancionExistente }: CancionFormProps) {
         titulo={titulo.trim()}
         autor={autor.trim() || null}
         onAplicar={setSeccionesIA}
+        onBuscandoChange={buscando => setEstadoBot(buscando ? 'working' : 'sleeping')}
       />
     </div>
   );

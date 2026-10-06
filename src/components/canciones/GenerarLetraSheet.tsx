@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Sparkles, RefreshCw, Link2, AlertTriangle } from 'lucide-react';
 import { useGenerarLetra } from '../../hooks/useGenerarLetra';
 import { BottomSheet } from '../layout/BottomSheet';
@@ -14,19 +14,31 @@ interface GenerarLetraSheetProps {
   titulo: string;
   autor: string | null;
   onAplicar: (secciones: SeccionGenerada[]) => void;
+  /** Avisa cuando la IA empieza (true) y termina (false) de buscar, salga bien o mal. */
+  onBuscandoChange?: (buscando: boolean) => void;
 }
 
-export function GenerarLetraSheet({ isOpen, onClose, titulo, autor, onAplicar }: GenerarLetraSheetProps) {
+export function GenerarLetraSheet({ isOpen, onClose, titulo, autor, onAplicar, onBuscandoChange }: GenerarLetraSheetProps) {
   const { loading, generarLetra } = useGenerarLetra();
   const [secciones, setSecciones] = useState<SeccionGenerada[] | null>(null);
   const [fuentes, setFuentes] = useState<Fuente[]>([]);
   const [noEncontrada, setNoEncontrada] = useState(false);
 
+  // El aviso se guarda en una ref para que `buscar` no cambie cada vez que el
+  // padre pase una función nueva: si cambiara, el efecto de abajo volvería a
+  // lanzar la búsqueda (y a gastar una llamada a la IA).
+  const onBuscandoChangeRef = useRef(onBuscandoChange);
+  useEffect(() => {
+    onBuscandoChangeRef.current = onBuscandoChange;
+  });
+
   const buscar = useCallback(async () => {
     setSecciones(null);
     setFuentes([]);
     setNoEncontrada(false);
+    onBuscandoChangeRef.current?.(true);
     const res = await generarLetra(titulo, autor);
+    onBuscandoChangeRef.current?.(false);
     if (!res) return; // el error ya se mostró como aviso
     if (!res.encontrada || res.secciones.length === 0) {
       setNoEncontrada(true);
