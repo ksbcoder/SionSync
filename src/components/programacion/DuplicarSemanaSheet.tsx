@@ -115,7 +115,7 @@ export function DuplicarSemanaSheet({
           className="w-full min-h-[44px] rounded-lg bg-brand-500 text-white font-medium text-sm hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {copiando ? (
-            <OrbePensante state="working" size={20} tono="sobre-indigo" label="Duplicando..." />
+            <OrbePensante state="solving" size={20} tono="sobre-indigo" label="Duplicando..." />
           ) : (
             <Copy className="w-4 h-4" />
           )}

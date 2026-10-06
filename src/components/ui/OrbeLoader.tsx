@@ -9,7 +9,7 @@ import { OrbePensante } from './OrbePensante';
 export function OrbeLoader({ text }: { text?: string }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-gray-50">
-      <OrbePensante state="searching" size={64} label={text ?? 'Cargando...'} />
+      <OrbePensante state="connecting" size={64} label={text ?? 'Cargando...'} />
       {text && <p className="text-sm text-gray-400">{text}</p>}
     </div>
   );
