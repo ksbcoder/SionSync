@@ -1,4 +1,4 @@
-import { BotAvatar, type BotAvatarState } from 'bot-avatars';
+import { BotAvatar, type BotAvatarState } from "bot-avatars";
 
 interface BotAsistenteProps {
   /** 'default' = tranquilo (mira a los lados); 'working' = trabajando (salta y se ríe); 'sleeping' = durmiendo. */
@@ -7,7 +7,7 @@ interface BotAsistenteProps {
 }
 
 /**
- * La cara del asistente de IA: un fantasma indigo con gafas de sol y audífonos.
+ * La cara del asistente de IA: un fantasma indigo con audífonos.
  * Al cambiar de estado, la librería pasa de una animación a otra con una
  * transición suave. Es decorativo (oculto para lectores de pantalla) porque
  * siempre va junto a un texto que dice qué está pasando.
@@ -22,7 +22,6 @@ export function BotAsistente({ state, size = 64 }: BotAsistenteProps) {
       shading="smooth"
       color="#4f46e5" // brand-600
       face="mouth"
-      glasses="shades"
       headphones
       theme="light"
       state={state}
